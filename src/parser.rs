@@ -1,5 +1,6 @@
 enum Node<'a> {
     Literal(&'a str),
+    Group(Box<Node<'a>>),
     Prompt,
     Var,
     Closure {
