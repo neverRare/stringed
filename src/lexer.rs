@@ -13,6 +13,24 @@ pub enum Token<'a> {
     Hash,
     Dollar,
 }
+impl<'a> Token<'a> {
+    pub fn describe(&self) -> &str {
+        match self {
+            Token::Literal(_) => "literal",
+            Token::OpenParen => "(",
+            Token::CloseParen => ")",
+            Token::QuestionMark => "?",
+            Token::Underscore => "_",
+            Token::Colon => ":",
+            Token::Plus => "+",
+            Token::OpenBracket => "[",
+            Token::CloseBracket => "]",
+            Token::Equal => "=",
+            Token::Hash => "#",
+            Token::Dollar => "$",
+        }
+    }
+}
 fn get_symbol(src: &str) -> Option<Token> {
     assert_eq!(src.len(), 1);
     Some(match src {
