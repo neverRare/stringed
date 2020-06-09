@@ -9,8 +9,8 @@ enum Node<'a> {
     Concat(Vec<Node<'a>>),
     Slice {
         src: Box<Node<'a>>,
-        lower: Box<Node<'a>>,
-        upper: Box<Node<'a>>,
+        lower: Option<Box<Node<'a>>>,
+        upper: Option<Box<Node<'a>>>,
     },
     Equal {
         left: Box<Node<'a>>,
