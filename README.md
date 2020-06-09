@@ -45,7 +45,6 @@ With the following precedence from highest to lowest.
 - Grouping
 - Length
 - Slice
-- Length
 - Concat
 - Equal
 - Closure
