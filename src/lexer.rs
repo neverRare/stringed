@@ -43,6 +43,7 @@ fn get_symbol(src: &str) -> Option<Token> {
         "[" => Token::OpenBracket,
         "]" => Token::CloseBracket,
         "=" => Token::Equal,
+        "#" => Token::Hash,
         "$" => Token::Dollar,
         _ => return None,
     })
