@@ -56,7 +56,7 @@ String literal are enclosed with either double quotation marks `""` or curly bra
 
 It can contain any characters and it doesn't have escaping functionality.
 
-Literals enclosed with `{}` can contain quotation mark or another braces. It can be nested: `{{}}` and `{{{}}{}}` are both valid literal and `{}}` may cause syntax error.
+Literals enclosed with `{}` can contain quotation mark or another braces. It can be nested: `{{}}` and `{{{}}{}}` are both valid literal and `{}}` may cause syntax error. It doesn't recognize quotation mark for nesting: `{"{"}` may cause syntax error.
 
 ## Basic Operations
 
