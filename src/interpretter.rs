@@ -42,7 +42,6 @@ impl<I: Fn() -> Result<String, String>, O: Fn(&str) -> ()> Interpretter<I, O> {
             Node::Eval(node) => self.run_node(var, &Node::parse(&self.eval(var, node)?)?)?,
             node => self.queue_output(&self.eval(var, node)?),
         }
-        (self.output)(&self.queue);
         Ok(())
     }
     fn eval(&self, var: &str, node: &Node) -> Result<String, String> {
@@ -86,6 +85,7 @@ impl<I: Fn() -> Result<String, String>, O: Fn(&str) -> ()> Interpretter<I, O> {
     }
     pub fn run(&mut self, src: &str) -> Result<(), String> {
         self.run_node("", &Node::parse(src)?)?;
+        (self.output)(&self.queue);
         Ok(())
     }
 }
