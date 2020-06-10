@@ -2,7 +2,7 @@ use crate::{
     error::{expect, unexpect},
     lexer::{lex, Token},
 };
-
+#[derive(Debug)]
 pub enum Node<'a> {
     Literal(&'a str),
     Group(Box<Node<'a>>),
