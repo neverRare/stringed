@@ -42,6 +42,7 @@ impl<I: Fn() -> Result<String, String>, O: Fn(&str) -> ()> Interpretter<I, O> {
             Node::Eval(node) => self.run_node(var, &Node::parse(&self.eval(var, node)?)?)?,
             node => self.buffer_output(&self.eval(var, node)?),
         }
+        (self.output)(&self.buffer);
         Ok(())
     }
     fn eval(&self, var: &str, node: &Node) -> Result<String, String> {
