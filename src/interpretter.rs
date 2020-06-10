@@ -7,20 +7,20 @@ where
 {
     input: I,
     output: O,
-    buffer: String,
+    queue: String,
 }
 impl<I: Fn() -> Result<String, String>, O: Fn(&str) -> ()> Interpretter<I, O> {
     pub fn new(input: I, output: O) -> Self {
         Self {
             input,
             output,
-            buffer: String::new(),
+            queue: String::new(),
         }
     }
-    fn buffer_output(&mut self, string: &str) {
-        self.buffer.push_str(string);
-        let mut lines: Vec<&str> = self.buffer.lines().collect();
-        let new_buffer = if self.buffer.ends_with('\n') {
+    fn queue_output(&mut self, string: &str) {
+        self.queue.push_str(string);
+        let mut lines: Vec<&str> = self.queue.lines().collect();
+        let new_queue = if self.queue.ends_with('\n') {
             ""
         } else {
             lines.pop().unwrap()
@@ -28,7 +28,7 @@ impl<I: Fn() -> Result<String, String>, O: Fn(&str) -> ()> Interpretter<I, O> {
         for line in lines {
             (self.output)(line);
         }
-        self.buffer = new_buffer.to_string();
+        self.queue = new_queue.to_string();
     }
     fn run_node(&mut self, var: &str, node: &Node) -> Result<(), String> {
         match node {
@@ -40,9 +40,9 @@ impl<I: Fn() -> Result<String, String>, O: Fn(&str) -> ()> Interpretter<I, O> {
                 }
             }
             Node::Eval(node) => self.run_node(var, &Node::parse(&self.eval(var, node)?)?)?,
-            node => self.buffer_output(&self.eval(var, node)?),
+            node => self.queue_output(&self.eval(var, node)?),
         }
-        (self.output)(&self.buffer);
+        (self.output)(&self.queue);
         Ok(())
     }
     fn eval(&self, var: &str, node: &Node) -> Result<String, String> {
