@@ -8,7 +8,7 @@ fn main() {
             if let Err(reason) = io::stdin().read_line(&mut input) {
                 Err(reason.to_string())
             } else {
-                Ok(input)
+                Ok(input.trim_end().to_string())
             }
         },
         |string| {
