@@ -113,7 +113,9 @@ pub fn lex(src: &str) -> Result<Vec<Token>, &str> {
                     }
                     i += 1;
                 }
-                None => continue,
+                None => {
+                    i += 1;
+                }
             }
         }
         Ok(tokens)
