@@ -92,6 +92,7 @@ pub fn lex(src: &str) -> Result<Vec<Token>, &str> {
         let mut i = 0;
         let mut tokens = Vec::new();
         while i < src.len() {
+            println!("{}", i);
             match src.get(i..i + 1) {
                 Some("{") => {
                     let token = get_brace_str(&src[i..])?;
@@ -104,6 +105,7 @@ pub fn lex(src: &str) -> Result<Vec<Token>, &str> {
                     i += token.len;
                 }
                 Some(item) => {
+                    i += 1;
                     if item == " " || item == "\t" || item == "\n" || item == "\r" {
                         continue;
                     }
@@ -111,7 +113,6 @@ pub fn lex(src: &str) -> Result<Vec<Token>, &str> {
                         Some(token) => tokens.push(token),
                         None => return Err("unidentified char"),
                     }
-                    i += 1;
                 }
                 None => {
                     i += 1;
