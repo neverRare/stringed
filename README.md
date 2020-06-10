@@ -17,6 +17,11 @@ For now, the source code isn't complete, nothing will work, but if you insist, y
 Hello " + ? + "!"
 ```
 
+```txt
+{"loop
+" + $ _}: $ "{" + _ + "}: " + _
+```
+
 ## What it is
 
 - UTF-8 string as the only data type
@@ -157,8 +162,4 @@ TODO :)
 
 This section is pretty much in WIP, I'm hoping that this language is capable, and maybe it is: with slice operation, we could decode compound data encoded in string; with eval, we could have first-class function in string. Is this turing complete? I have no idea.
 
-For now, I'll write the interpretter. And hey look, an infinte recursion in Stringed, it have the same blood as lambda's `(\x.x x)(\x.x x)`
-
-```txt
-{: $ "{" + _ + "}" + _}: $ "{" + _ + "}" + _
-```
+For now, I'll write the interpretter.
