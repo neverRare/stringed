@@ -92,7 +92,6 @@ pub fn lex(src: &str) -> Result<Vec<Token>, &str> {
         let mut i = 0;
         let mut tokens = Vec::new();
         while i < src.len() {
-            println!("{}", i);
             match src.get(i..i + 1) {
                 Some("{") => {
                     let token = get_brace_str(&src[i..])?;
