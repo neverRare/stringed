@@ -20,7 +20,7 @@ impl<I: Fn() -> Result<String, String>, O: Fn(&str) -> ()> Interpretter<I, O> {
     fn queue_output(&mut self, string: &str) {
         self.queue.push_str(string);
         let mut lines: Vec<&str> = self.queue.lines().collect();
-        let new_queue = if self.queue.ends_with('\n') {
+        let new_queue = if self.queue.ends_with('\n') || lines.is_empty() {
             ""
         } else {
             lines.pop().unwrap()
