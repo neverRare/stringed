@@ -1,6 +1,6 @@
 # Stringed
 
-A simple esolang with string as the only data type.
+An esolang with first-class strings.
 
 ## Installation
 
