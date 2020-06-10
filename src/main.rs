@@ -4,11 +4,11 @@ use stringed::Interpretter;
 fn main() {
     let mut interpretter = Interpretter::new(
         || {
-            let mut guess = String::new();
-            if let Err(reason) = io::stdin().read_line(&mut guess) {
+            let mut input = String::new();
+            if let Err(reason) = io::stdin().read_line(&mut input) {
                 Err(reason.to_string())
             } else {
-                Ok(guess)
+                Ok(input)
             }
         },
         |string| {
