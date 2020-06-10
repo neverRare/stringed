@@ -5,39 +5,39 @@ use crate::{
 #[derive(Debug)]
 pub enum Node<'a> {
     Literal(&'a str),
-    Group(Box<Node<'a>>),
+    Group(Box<Self>),
     Prompt,
     Var,
     Closure {
-        left: Box<Node<'a>>,
-        right: Box<Node<'a>>,
+        left: Box<Self>,
+        right: Box<Self>,
     },
-    Concat(Vec<Node<'a>>),
+    Concat(Vec<Self>),
     Slice {
-        src: Box<Node<'a>>,
-        lower: Option<Box<Node<'a>>>,
-        upper: Option<Box<Node<'a>>>,
+        src: Box<Self>,
+        lower: Option<Box<Self>>,
+        upper: Option<Box<Self>>,
     },
     Equal {
-        left: Box<Node<'a>>,
-        right: Box<Node<'a>>,
+        left: Box<Self>,
+        right: Box<Self>,
     },
-    Length(Box<Node<'a>>),
-    Eval(Box<Node<'a>>),
+    Length(Box<Self>),
+    Eval(Box<Self>),
 }
 impl<'a> Node<'a> {
     fn precedence(&self) -> u8 {
         match self {
-            Node::Literal(_) => 7,
-            Node::Prompt => 7,
-            Node::Var => 7,
-            Node::Group(_) => 6,
-            Node::Length(_) => 5,
-            Node::Slice { .. } => 4,
-            Node::Concat(_) => 3,
-            Node::Equal { .. } => 2,
-            Node::Closure { .. } => 1,
-            Node::Eval(_) => 0,
+            Self::Literal(_) => 7,
+            Self::Prompt => 7,
+            Self::Var => 7,
+            Self::Group(_) => 6,
+            Self::Length(_) => 5,
+            Self::Slice { .. } => 4,
+            Self::Concat(_) => 3,
+            Self::Equal { .. } => 2,
+            Self::Closure { .. } => 1,
+            Self::Eval(_) => 0,
         }
     }
     pub fn from_tokens(tokens: &[Token<'a>]) -> Result<Self, String> {
@@ -49,16 +49,16 @@ impl<'a> Node<'a> {
         }
     }
     pub fn parse(src: &'a str) -> Result<Self, String> {
-        Node::from_tokens(&lex(src)?)
+        Self::from_tokens(&lex(src)?)
     }
     fn merge_careless(self, partial_node: PartialNode<'a>) -> Self {
         match partial_node {
-            PartialNode::Closure(right) => Node::Closure {
+            PartialNode::Closure(right) => Self::Closure {
                 left: Box::new(self),
                 right: Box::new(right),
             },
-            PartialNode::Concat(right) => Node::Concat(vec![self, right]),
-            PartialNode::Slice { lower, upper } => Node::Slice {
+            PartialNode::Concat(right) => Self::Concat(vec![self, right]),
+            PartialNode::Slice { lower, upper } => Self::Slice {
                 src: Box::new(self),
                 lower: match lower {
                     Some(thing) => Some(Box::new(thing)),
@@ -69,7 +69,7 @@ impl<'a> Node<'a> {
                     None => None,
                 },
             },
-            PartialNode::Equal(right) => Node::Equal {
+            PartialNode::Equal(right) => Self::Equal {
                 left: Box::new(self),
                 right: Box::new(right),
             },
@@ -99,7 +99,7 @@ impl<'a> Node<'a> {
                 Self::Slice { .. } => unreachable!(),
                 Self::Equal { left, right } => {
                     if let PartialNode::Equal(another_right) = partial_node {
-                        Node::Equal {
+                        Self::Equal {
                             left: Box::new(Self::Equal { left, right }),
                             right: Box::new(another_right),
                         }
@@ -129,16 +129,15 @@ impl<'a> CountedNode<'a> {
             Err(expect("expression", "EOF"))
         } else {
             match &tokens[0] {
-                Token::Literal(content) => Ok(CountedNode {
+                Token::Literal(content) => Ok(Self {
                     node: Node::Literal(content),
                     count: 1,
                 }),
                 Token::OpenParen => {
-                    match CountedNode::delimited_from_tokens(true, &tokens[1..], &Token::CloseParen)
-                    {
+                    match Self::delimited_from_tokens(true, &tokens[1..], &Token::CloseParen) {
                         Some(node) => {
                             let node = node?;
-                            Ok(CountedNode {
+                            Ok(Self {
                                 node: Node::Group(Box::new(node.node)),
                                 count: node.count + 2,
                             })
@@ -146,24 +145,24 @@ impl<'a> CountedNode<'a> {
                         None => Err(expect("expression", ")")),
                     }
                 }
-                Token::QuestionMark => Ok(CountedNode {
+                Token::QuestionMark => Ok(Self {
                     node: Node::Prompt,
                     count: 1,
                 }),
-                Token::Underscore => Ok(CountedNode {
+                Token::Underscore => Ok(Self {
                     node: Node::Var,
                     count: 1,
                 }),
                 Token::Hash => {
-                    let node = CountedNode::simple_from_tokens(&tokens[1..])?;
-                    Ok(CountedNode {
+                    let node = Self::simple_from_tokens(&tokens[1..])?;
+                    Ok(Self {
                         node: Node::Length(Box::new(node.node)),
                         count: node.count + 1,
                     })
                 }
                 Token::Dollar => {
-                    let node = CountedNode::simple_from_tokens(&tokens[1..])?;
-                    Ok(CountedNode {
+                    let node = Self::simple_from_tokens(&tokens[1..])?;
+                    Ok(Self {
                         node: Node::Eval(Box::new(node.node)),
                         count: node.count + 1,
                     })
@@ -193,12 +192,12 @@ impl<'a> CountedNode<'a> {
         } else if &tokens[0] == closing {
             None
         } else {
-            match CountedNode::from_tokens(parse_colon, tokens) {
+            match Self::from_tokens(parse_colon, tokens) {
                 Ok(node) => {
                     if node.count < tokens.len() {
                         let next = &tokens[node.count];
                         if next == closing {
-                            Some(Ok(CountedNode {
+                            Some(Ok(Self {
                                 node: node.node,
                                 count: node.count,
                             }))
