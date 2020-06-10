@@ -40,7 +40,7 @@ impl<'a> Node<'a> {
             Node::Eval(_) => 0,
         }
     }
-    pub fn from_tokens(tokens: &[Token<'a>]) -> Result<Node<'a>, String> {
+    pub fn from_tokens(tokens: &[Token<'a>]) -> Result<Self, String> {
         let node = CountedNode::from_tokens(true, &tokens)?;
         if node.count == tokens.len() {
             Ok(node.node)
@@ -48,10 +48,10 @@ impl<'a> Node<'a> {
             Err(unexpect(tokens[node.count].describe()))
         }
     }
-    pub fn parse(src: &str) -> Result<Node, String> {
+    pub fn parse(src: &'a str) -> Result<Self, String> {
         Node::from_tokens(&lex(src)?)
     }
-    fn merge_careless(self, partial_node: PartialNode<'a>) -> Node<'a> {
+    fn merge_careless(self, partial_node: PartialNode<'a>) -> Self {
         match partial_node {
             PartialNode::Closure(right) => Node::Closure {
                 left: Box::new(self),
@@ -75,7 +75,7 @@ impl<'a> Node<'a> {
             },
         }
     }
-    fn merge(self, partial_node: PartialNode<'a>) -> Node<'a> {
+    fn merge(self, partial_node: PartialNode<'a>) -> Self {
         if self.precedence() <= partial_node.precedence() {
             match self {
                 Self::Literal(_) => unreachable!(),
@@ -124,7 +124,7 @@ struct CountedNode<'a> {
     count: usize,
 }
 impl<'a> CountedNode<'a> {
-    fn simple_from_tokens(tokens: &[Token<'a>]) -> Result<CountedNode<'a>, String> {
+    fn simple_from_tokens(tokens: &[Token<'a>]) -> Result<Self, String> {
         if tokens.is_empty() {
             Err(expect("expression", "EOF"))
         } else {
