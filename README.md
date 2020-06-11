@@ -6,7 +6,7 @@ An esolang with first-class strings.
 
 ## Installation
 
-For now, the source code isn't complete, nothing will work, but if you insist, you'll need git and cargo.
+TODO
 
 ## Examples
 
