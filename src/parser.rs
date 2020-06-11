@@ -1,7 +1,14 @@
-use crate::{
-    error::{expect, unexpect},
-    lexer::{lex, Token},
-};
+use crate::lexer::{lex, Token};
+macro_rules! expect {
+    ($expected:expr, $found:expr) => {
+        format!("expected {}, found {}", $expected, $found)
+    };
+}
+macro_rules! unexpect {
+    ($unexpected:expr) => {
+        format!("unexpected {}", $unexpected)
+    };
+}
 #[derive(Debug)]
 pub enum Node<'a> {
     Literal(&'a str),
@@ -45,7 +52,7 @@ impl<'a> Node<'a> {
         if node.count == tokens.len() {
             Ok(node.node)
         } else {
-            Err(unexpect(tokens[node.count].describe()))
+            Err(unexpect!(tokens[node.count].describe()))
         }
     }
     pub fn parse(src: &'a str) -> Result<Self, String> {
@@ -125,7 +132,7 @@ struct CountedNode<'a> {
 impl<'a> CountedNode<'a> {
     fn simple_from_tokens(tokens: &[Token<'a>]) -> Result<Self, String> {
         if tokens.is_empty() {
-            Err(expect("expression", "EOF"))
+            Err(expect!("expression", "EOF"))
         } else {
             match &tokens[0] {
                 Token::Literal(content) => Ok(Self {
@@ -141,7 +148,7 @@ impl<'a> CountedNode<'a> {
                                 count: node.count + 2,
                             })
                         }
-                        None => Err(expect("expression", ")")),
+                        None => Err(expect!("expression", ")")),
                     }
                 }
                 Token::QuestionMark => Ok(Self {
@@ -166,7 +173,7 @@ impl<'a> CountedNode<'a> {
                         count: node.count + 1,
                     })
                 }
-                token => Err(expect("expression", token.describe())),
+                token => Err(expect!("expression", token.describe())),
             }
         }
     }
@@ -187,7 +194,7 @@ impl<'a> CountedNode<'a> {
         closing: &Token,
     ) -> Option<Result<Self, String>> {
         if tokens.is_empty() {
-            Some(Err(unexpect("EOF")))
+            Some(Err(unexpect!("EOF")))
         } else if &tokens[0] == closing {
             None
         } else {
@@ -201,10 +208,10 @@ impl<'a> CountedNode<'a> {
                                 count: node.count,
                             }))
                         } else {
-                            Some(Err(expect(closing.describe(), next.describe())))
+                            Some(Err(expect!(closing.describe(), next.describe())))
                         }
                     } else {
-                        Some(Err(expect(closing.describe(), "EOF")))
+                        Some(Err(expect!(closing.describe(), "EOF")))
                     }
                 }
                 Err(reason) => Some(Err(reason)),
