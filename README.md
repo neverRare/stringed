@@ -196,9 +196,3 @@ Stringed expression on top level are executed.
 ## Output queue
 
 The stringed interpretter internally have queue for output. Whenever the stringed code outputs a string, it is first goes to queue, then it is only printed on standard output on every newline (LF or CRLF). When the stringed code is done executing, the remaining string on queue is printed as well.
-
-## What can it do
-
-This section is pretty much in WIP, I'm hoping that this language is capable, and maybe it is: with slice operation, we could decode compound data encoded in string; with eval, we could have first-class function in string. Is this turing complete? I have no idea.
-
-For now, I'll write the interpretter.
