@@ -156,7 +156,46 @@ Literals in `{}` doesn't look like literals, nice!
 
 ## IO
 
-TODO :)
+Stringed have `?`, when evaluated, it ask the user to input then it is evaluated to that value.
+
+```txt
+"Hello " + ?
+```
+
+Stringed also have output, which is pretty weird. It is explained below.
+
+```txt
+"some" + "thing"
+```
+
+When not dealing with input, we could think of stringed code as an expression and it output whatever it evaluates to. The example above could be imagined as the following pseudo-code:
+
+```txt
+print("some" + "thing")
+```
+
+But this is what stringed actually does:
+
+```txt
+print("some")
+print("thing")
+```
+
+Every stringed operation have 2 modes: evaluation and execution. Evaluation means it will be evaluated normally as an operation, it does what explained earlier, and it evaluates to a string. Execution means it is executed, it may output something, and it doesn't evaluates to any value.
+
+| Operation | Execution                                               |
+| --------- | ------------------------------------------------------- |
+| Group     | It executes any expression inside                       |
+| Concat    | It executes each operand one by one                     |
+| Closure   | It evaluates its first operand then executes the second |
+| Eval      | It evaluates its operand then it is executed            |
+| any other | It is evaluated then outputted                          |
+
+Stringed expression on top level are executed.
+
+## Output queue
+
+The stringed interpretter internally have queue for output. Whenever the stringed code outputs a string, it is first goes to queue, then it is only printed on standard output on every newline (LF or CRLF). When the stringed code is done executing, the remaining string on queue is printed as well.
 
 ## What can it do
 
