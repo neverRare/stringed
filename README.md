@@ -1,5 +1,7 @@
 # Stringed
 
+[![Rust](https://github.com/neverRare/stringed/workflows/Rust/badge.svg)](https://github.com/neverRare/stringed/actions?query=workflow%3ARust)
+
 An esolang with first-class strings.
 
 ## Installation
