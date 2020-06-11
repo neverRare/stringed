@@ -2,4 +2,5 @@ mod lexer;
 mod parser;
 mod error;
 mod interpretter;
-pub use interpretter::Interpretter;
+mod command;
+pub use command::Command;
