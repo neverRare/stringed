@@ -86,8 +86,7 @@ impl<'a> Node<'a> {
                     left,
                     right: Box::new(right.merge(partial_node)),
                 },
-                Self::Concat(vec) => {
-                    let mut vec = vec;
+                Self::Concat(mut vec) => {
                     if let PartialNode::Concat(right) = partial_node {
                         vec.push(right);
                     } else {
