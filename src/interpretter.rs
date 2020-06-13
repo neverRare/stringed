@@ -9,7 +9,11 @@ where
     output: O,
     queue: String,
 }
-impl<I: Fn() -> Result<String, String>, O: Fn(&str) -> ()> Interpretter<I, O> {
+impl<I, O> Interpretter<I, O>
+where
+    I: Fn() -> Result<String, String>,
+    O: Fn(&str) -> (),
+{
     pub fn new(input: I, output: O) -> Self {
         Self {
             input,

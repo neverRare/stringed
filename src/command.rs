@@ -68,7 +68,7 @@ impl CommandName {
                 Self::Run => HELP_RUN,
                 Self::Help => HELP_HELP,
                 Self::Version => HELP_VERSION,
-            }
+            },
         );
     }
 }
@@ -130,9 +130,7 @@ impl Command {
                         println!("{}", string);
                     },
                 );
-                if let Err(reason) = interpretter.run(&content) {
-                    eprintln!("Error: {}", reason);
-                }
+                interpretter.run(&content)?;
             }
             Self::Help(command) => command.print_help(),
             Self::Version => println!("STRINGED {}", VERSION),

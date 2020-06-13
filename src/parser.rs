@@ -1,11 +1,11 @@
 use crate::lexer::{lex, Token};
 macro_rules! expect {
-    ($expected:expr, $found:expr) => {
+    ($expected:expr, $found:expr $(,)?) => {
         format!("expected {}, found {}", $expected, $found)
     };
 }
 macro_rules! unexpect {
-    ($unexpected:expr) => {
+    ($unexpected:expr $(,)?) => {
         format!("unexpected {}", $unexpected)
     };
 }
