@@ -250,7 +250,7 @@ impl<'a> CountedPartialNode<'a> {
             match &tokens[0] {
                 Token::Colon => {
                     if parse_colon {
-                        match CountedNode::from_tokens(true, &tokens[1..]) {
+                        match CountedNode::simple_from_tokens(&tokens[1..]) {
                             Ok(node) => Some(Ok(Self {
                                 node: PartialNode::Closure(node.node),
                                 count: node.count + 1,
@@ -261,7 +261,7 @@ impl<'a> CountedPartialNode<'a> {
                         None
                     }
                 }
-                Token::Plus => match CountedNode::from_tokens(parse_colon, &tokens[1..]) {
+                Token::Plus => match CountedNode::simple_from_tokens(&tokens[1..]) {
                     Ok(node) => Some(Ok(Self {
                         node: PartialNode::Concat(node.node),
                         count: node.count + 1,
@@ -307,7 +307,7 @@ impl<'a> CountedPartialNode<'a> {
                         },
                     }))
                 }
-                Token::Equal => match CountedNode::from_tokens(parse_colon, &tokens[1..]) {
+                Token::Equal => match CountedNode::simple_from_tokens(&tokens[1..]) {
                     Ok(node) => Some(Ok(Self {
                         node: PartialNode::Equal(node.node),
                         count: node.count + 1,
