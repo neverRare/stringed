@@ -501,11 +501,11 @@ mod parser_tests {
         assert_node!(
             r#""A" = "B" = "C""#,
             Node::Equal {
-                left: Box::new(Node::Literal("A")),
-                right: Box::new(Node::Equal {
-                    left: Box::new(Node::Literal("B")),
-                    right: Box::new(Node::Literal("C")),
+                left: Box::new(Node::Equal {
+                    left: Box::new(Node::Literal("A")),
+                    right: Box::new(Node::Literal("B")),
                 }),
+                right: Box::new(Node::Literal("C")),
             },
         );
     }
