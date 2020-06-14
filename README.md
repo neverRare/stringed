@@ -24,6 +24,12 @@ Hello " + ? + "!"
 " + $ _}: $ "{" + _ + "}: " + _
 ```
 
+```txt
+"Counting Program
+" + ("
+": ($ "{#(_[{" + #(_ + "                                ") + "}:]) + {" + _ + "} + (_ + { }: $ _)}"): $ "{" + _ + "}: " + _)
+```
+
 ## What it is
 
 - UTF-8 string as the only data type
