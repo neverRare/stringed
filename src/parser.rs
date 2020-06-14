@@ -67,14 +67,8 @@ impl<'a> Node<'a> {
             PartialNode::Concat(right) => Self::Concat(vec![self, right]),
             PartialNode::Slice { lower, upper } => Self::Slice {
                 src: Box::new(self),
-                lower: match lower {
-                    Some(thing) => Some(Box::new(thing)),
-                    None => None,
-                },
-                upper: match upper {
-                    Some(thing) => Some(Box::new(thing)),
-                    None => None,
-                },
+                lower: lower.map(Box::new),
+                upper: upper.map(Box::new),
             },
             PartialNode::Equal(right) => Self::Equal {
                 left: Box::new(self),
@@ -302,14 +296,8 @@ impl<'a> CountedPartialNode<'a> {
                                 Some(node) => node.count,
                             },
                         node: PartialNode::Slice {
-                            lower: match lower {
-                                None => None,
-                                Some(node) => Some(node.node),
-                            },
-                            upper: match upper {
-                                None => None,
-                                Some(node) => Some(node.node),
-                            },
+                            lower: lower.map(|node| node.node),
+                            upper: upper.map(|node| node.node),
                         },
                     }))
                 }
