@@ -243,7 +243,7 @@ struct CountedPartialNode<'a> {
     count: usize,
 }
 impl<'a> CountedPartialNode<'a> {
-    fn from_tokens(parse_colon: bool, tokens: &[Token<'a>]) -> Option<Result<Self, String>> {
+    fn simple_from_tokens(parse_colon: bool, tokens: &[Token<'a>]) -> Option<Result<Self, String>> {
         if tokens.is_empty() {
             None
         } else {
@@ -347,7 +347,7 @@ impl<'a, 'b> Iterator for CountedPartialNodes<'a, 'b> {
                 self.stopped = true;
                 None
             } else {
-                match CountedPartialNode::from_tokens(self.parse_colon, tokens) {
+                match CountedPartialNode::simple_from_tokens(self.parse_colon, tokens) {
                     None => {
                         self.stopped = true;
                         None
