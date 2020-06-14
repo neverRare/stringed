@@ -9,7 +9,7 @@ macro_rules! unexpect {
         format!("unexpected {}", $unexpected)
     };
 }
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Node<'a> {
     Literal(&'a str),
     Group(Box<Self>),
@@ -369,5 +369,552 @@ impl<'a, 'b> Iterator for CountedPartialNodes<'a, 'b> {
                 }
             }
         }
+    }
+}
+#[cfg(test)]
+mod parser_tests {
+    use super::Node;
+    macro_rules! assert_node {
+        ($src:expr, $node:expr $(,)?) => {{
+            let src: &str = $src;
+            let node: Node = $node;
+            assert_eq!(Node::parse(src), Ok(node));
+        }};
+    }
+    #[test]
+    fn literal() {
+        assert_node!(r#""hello""#, Node::Literal("hello"));
+        assert_node!("{hello}", Node::Literal("hello"));
+    }
+    #[test]
+    fn group() {
+        assert_node!(
+            r#"("hello")"#,
+            Node::Group(Box::new(Node::Literal("hello"))),
+        );
+    }
+    #[test]
+    fn prompt() {
+        assert_node!("?", Node::Prompt);
+    }
+    #[test]
+    fn var() {
+        assert_node!("_", Node::Var);
+    }
+    #[test]
+    fn closure() {
+        assert_node!(
+            r#""test": _"#,
+            Node::Closure {
+                left: Box::new(Node::Literal("test")),
+                right: Box::new(Node::Var),
+            },
+        );
+    }
+    #[test]
+    fn closure_closure() {
+        assert_node!(
+            r#""A": "B": "C""#,
+            Node::Closure {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Closure {
+                    left: Box::new(Node::Literal("B")),
+                    right: Box::new(Node::Literal("C")),
+                }),
+            },
+        );
+    }
+    #[test]
+    fn concat() {
+        assert_node!(
+            r#""A" + "B""#,
+            Node::Concat(vec![Node::Literal("A"), Node::Literal("B")]),
+        );
+    }
+    #[test]
+    fn concat_concat() {
+        assert_node!(
+            r#""A" + "B" + "C""#,
+            Node::Concat(vec![
+                Node::Literal("A"),
+                Node::Literal("B"),
+                Node::Literal("C"),
+            ]),
+        );
+    }
+    #[test]
+    fn slice() {
+        assert_node!(
+            r#""A"["B":"C"]"#,
+            Node::Slice {
+                src: Box::new(Node::Literal("A")),
+                lower: Some(Box::new(Node::Literal("B"))),
+                upper: Some(Box::new(Node::Literal("C"))),
+            },
+        );
+        assert_node!(
+            r#""A"["B":]"#,
+            Node::Slice {
+                src: Box::new(Node::Literal("A")),
+                lower: Some(Box::new(Node::Literal("B"))),
+                upper: None,
+            },
+        );
+        assert_node!(
+            r#""A"[:"B"]"#,
+            Node::Slice {
+                src: Box::new(Node::Literal("A")),
+                lower: None,
+                upper: Some(Box::new(Node::Literal("B"))),
+            },
+        );
+        assert_node!(
+            r#""A"[:]"#,
+            Node::Slice {
+                src: Box::new(Node::Literal("A")),
+                lower: None,
+                upper: None,
+            },
+        );
+    }
+    #[test]
+    fn slice_slice() {
+        assert_node!(
+            r#""A"[:][:]"#,
+            Node::Slice {
+                src: Box::new(Node::Slice {
+                    src: Box::new(Node::Literal("A")),
+                    lower: None,
+                    upper: None,
+                }),
+                lower: None,
+                upper: None,
+            },
+        );
+    }
+    #[test]
+    fn equal() {
+        assert_node!(
+            r#""A" = "B""#,
+            Node::Equal {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Literal("B")),
+            },
+        );
+    }
+    #[test]
+    fn equal_equal() {
+        assert_node!(
+            r#""A" = "B" = "C""#,
+            Node::Equal {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Equal {
+                    left: Box::new(Node::Literal("B")),
+                    right: Box::new(Node::Literal("C")),
+                }),
+            },
+        );
+    }
+    #[test]
+    fn length() {
+        assert_node!(r#"#"A""#, Node::Length(Box::new(Node::Literal("A"))));
+    }
+    #[test]
+    fn length_length() {
+        assert_node!(
+            r#"##"A""#,
+            Node::Length(Box::new(Node::Length(Box::new(Node::Literal("A"))))),
+        );
+    }
+    #[test]
+    fn eval() {
+        assert_node!(r#"$ "A""#, Node::Eval(Box::new(Node::Literal("A"))));
+    }
+    #[test]
+    fn eval_eval() {
+        assert_node!(
+            r#"$ $ "A""#,
+            Node::Eval(Box::new(Node::Eval(Box::new(Node::Literal("A"))))),
+        );
+    }
+    #[test]
+    fn group_closure() {
+        assert_node!(
+            r#"("A": "B")"#,
+            Node::Group(Box::new(Node::Closure {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Literal("B")),
+            })),
+        );
+        assert_node!(
+            r#"("A"): "B""#,
+            Node::Closure {
+                left: Box::new(Node::Group(Box::new(Node::Literal("A")))),
+                right: Box::new(Node::Literal("B")),
+            },
+        );
+        assert_node!(
+            r#""A": ("B")"#,
+            Node::Closure {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Group(Box::new(Node::Literal("B")))),
+            },
+        );
+    }
+    #[test]
+    fn group_concat() {
+        assert_node!(
+            r#"("A" + "B")"#,
+            Node::Group(Box::new(Node::Concat(vec![
+                Node::Literal("A"),
+                Node::Literal("B"),
+            ]))),
+        );
+        assert_node!(
+            r#"("A") + "B""#,
+            Node::Concat(vec![
+                Node::Group(Box::new(Node::Literal("A"))),
+                Node::Literal("B"),
+            ]),
+        );
+        assert_node!(
+            r#""A" + ("B")"#,
+            Node::Concat(vec![
+                Node::Literal("A"),
+                Node::Group(Box::new(Node::Literal("B"))),
+            ]),
+        );
+    }
+    #[test]
+    fn group_slice() {
+        assert_node!(
+            r#"("A"[:])"#,
+            Node::Group(Box::new(Node::Slice {
+                src: Box::new(Node::Literal("A")),
+                lower: None,
+                upper: None,
+            })),
+        );
+        assert_node!(
+            r#"("A")[:]"#,
+            Node::Slice {
+                src: Box::new(Node::Group(Box::new(Node::Literal("A")))),
+                lower: None,
+                upper: None,
+            },
+        );
+    }
+    #[test]
+    fn group_equal() {
+        assert_node!(
+            r#"("A" = "B")"#,
+            Node::Group(Box::new(Node::Equal {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Literal("B")),
+            })),
+        );
+        assert_node!(
+            r#"("A") = "B""#,
+            Node::Equal {
+                left: Box::new(Node::Group(Box::new(Node::Literal("A")))),
+                right: Box::new(Node::Literal("B")),
+            },
+        );
+        assert_node!(
+            r#""A" = ("B")"#,
+            Node::Equal {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Group(Box::new(Node::Literal("B")))),
+            },
+        );
+    }
+    #[test]
+    fn group_length() {
+        assert_node!(
+            r#"(#"A")"#,
+            Node::Group(Box::new(Node::Length(Box::new(Node::Literal("A"))))),
+        );
+        assert_node!(
+            r#"#("A")"#,
+            Node::Length(Box::new(Node::Group(Box::new(Node::Literal("A"))))),
+        );
+    }
+    #[test]
+    fn group_eval() {
+        assert_node!(
+            r#"($ "A")"#,
+            Node::Group(Box::new(Node::Eval(Box::new(Node::Literal("A"))))),
+        );
+        assert_node!(
+            r#"$ ("A")"#,
+            Node::Eval(Box::new(Node::Group(Box::new(Node::Literal("A"))))),
+        );
+    }
+    #[test]
+    fn closure_concat() {
+        assert_node!(
+            r#""A": "B" + "C""#,
+            Node::Closure {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Concat(vec![Node::Literal("B"), Node::Literal("C")])),
+            },
+        );
+        assert_node!(
+            r#""A" + "B": "C""#,
+            Node::Closure {
+                left: Box::new(Node::Concat(vec![Node::Literal("A"), Node::Literal("B")])),
+                right: Box::new(Node::Literal("C")),
+            },
+        );
+    }
+    #[test]
+    fn closure_slice() {
+        assert_node!(
+            r#""A": "B"[:]"#,
+            Node::Closure {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Slice {
+                    src: Box::new(Node::Literal("B")),
+                    lower: None,
+                    upper: None,
+                }),
+            },
+        );
+        assert_node!(
+            r#""A"[:]: "B""#,
+            Node::Closure {
+                left: Box::new(Node::Slice {
+                    src: Box::new(Node::Literal("A")),
+                    lower: None,
+                    upper: None,
+                }),
+                right: Box::new(Node::Literal("B")),
+            },
+        );
+    }
+    #[test]
+    fn closure_equal() {
+        assert_node!(
+            r#""A": "B" = "C""#,
+            Node::Closure {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Equal {
+                    left: Box::new(Node::Literal("B")),
+                    right: Box::new(Node::Literal("C")),
+                }),
+            },
+        );
+        assert_node!(
+            r#""A" = "B": "C""#,
+            Node::Closure {
+                left: Box::new(Node::Equal {
+                    left: Box::new(Node::Literal("A")),
+                    right: Box::new(Node::Literal("B")),
+                }),
+                right: Box::new(Node::Literal("C")),
+            },
+        );
+    }
+    #[test]
+    fn closure_length() {
+        assert_node!(
+            r#""A": #"B""#,
+            Node::Closure {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Length(Box::new(Node::Literal("B")))),
+            },
+        );
+        assert_node!(
+            r#"#"A": "B""#,
+            Node::Closure {
+                left: Box::new(Node::Length(Box::new(Node::Literal("A")))),
+                right: Box::new(Node::Literal("B")),
+            },
+        );
+    }
+    #[test]
+    fn closure_eval() {
+        assert_node!(
+            r#""A": $ "B""#,
+            Node::Closure {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Eval(Box::new(Node::Literal("B")))),
+            },
+        );
+        assert_node!(
+            r#"$ "A": "B""#,
+            Node::Eval(Box::new(Node::Closure {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Literal("B")),
+            })),
+        );
+    }
+    #[test]
+    fn concat_slice() {
+        assert_node!(
+            r#""A" + "B"[:]"#,
+            Node::Concat(vec![
+                Node::Literal("A"),
+                Node::Slice {
+                    src: Box::new(Node::Literal("B")),
+                    lower: None,
+                    upper: None,
+                },
+            ]),
+        );
+        assert_node!(
+            r#""A"[:] + "B""#,
+            Node::Concat(vec![
+                Node::Slice {
+                    src: Box::new(Node::Literal("A")),
+                    lower: None,
+                    upper: None,
+                },
+                Node::Literal("B"),
+            ]),
+        );
+    }
+    #[test]
+    fn concat_equal() {
+        assert_node!(
+            r#""A" + "B" = "C""#,
+            Node::Equal {
+                left: Box::new(Node::Concat(vec![Node::Literal("A"), Node::Literal("B")])),
+                right: Box::new(Node::Literal("C")),
+            },
+        );
+        assert_node!(
+            r#""A" = "B" + "C""#,
+            Node::Equal {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Concat(vec![Node::Literal("B"), Node::Literal("C")])),
+            },
+        );
+    }
+    #[test]
+    fn concat_length() {
+        assert_node!(
+            r#""A" + #"B""#,
+            Node::Concat(vec![
+                Node::Literal("A"),
+                Node::Length(Box::new(Node::Literal("B"))),
+            ]),
+        );
+        assert_node!(
+            r#"#"A" + "B""#,
+            Node::Concat(vec![
+                Node::Length(Box::new(Node::Literal("A"))),
+                Node::Literal("B"),
+            ]),
+        );
+    }
+    #[test]
+    fn concat_eval() {
+        assert_node!(
+            r#""A" + $ "B""#,
+            Node::Concat(vec![
+                Node::Literal("A"),
+                Node::Eval(Box::new(Node::Literal("B"))),
+            ]),
+        );
+        assert_node!(
+            r#"$ "A" + "B""#,
+            Node::Eval(Box::new(Node::Concat(vec![
+                Node::Literal("A"),
+                Node::Literal("B"),
+            ]))),
+        );
+    }
+    #[test]
+    fn slice_equal() {
+        assert_node!(
+            r#""A"[:] = "B""#,
+            Node::Equal {
+                left: Box::new(Node::Slice {
+                    src: Box::new(Node::Literal("A")),
+                    lower: None,
+                    upper: None,
+                }),
+                right: Box::new(Node::Literal("B")),
+            },
+        );
+        assert_node!(
+            r#""A" = "B"[:]"#,
+            Node::Equal {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Slice {
+                    src: Box::new(Node::Literal("B")),
+                    lower: None,
+                    upper: None,
+                }),
+            },
+        );
+    }
+    #[test]
+    fn slice_length() {
+        assert_node!(
+            r#"#"A"[:]"#,
+            Node::Slice {
+                src: Box::new(Node::Length(Box::new(Node::Literal("A")))),
+                lower: None,
+                upper: None,
+            },
+        );
+    }
+    #[test]
+    fn slice_eval() {
+        assert_node!(
+            r#"$ "A"[:]"#,
+            Node::Eval(Box::new(Node::Slice {
+                src: Box::new(Node::Literal("A")),
+                lower: None,
+                upper: None,
+            })),
+        );
+    }
+    #[test]
+    fn equal_length() {
+        assert_node!(
+            r#""A" = #"B""#,
+            Node::Equal {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Length(Box::new(Node::Literal("B")))),
+            },
+        );
+        assert_node!(
+            r#"#"A" = "B""#,
+            Node::Equal {
+                left: Box::new(Node::Length(Box::new(Node::Literal("A")))),
+                right: Box::new(Node::Literal("B")),
+            },
+        );
+    }
+    #[test]
+    fn equal_eval() {
+        assert_node!(
+            r#""A" = $ "B""#,
+            Node::Equal {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Eval(Box::new(Node::Literal("B")))),
+            },
+        );
+        assert_node!(
+            r#"$ "A" = "B""#,
+            Node::Eval(Box::new(Node::Equal {
+                left: Box::new(Node::Literal("A")),
+                right: Box::new(Node::Literal("B")),
+            })),
+        );
+    }
+    #[test]
+    fn length_eval() {
+        assert_node!(
+            r#"#$ "A""#,
+            Node::Length(Box::new(Node::Eval(Box::new(Node::Literal("A"))))),
+        );
+        assert_node!(
+            r#"$ #"A""#,
+            Node::Eval(Box::new(Node::Length(Box::new(Node::Literal("A"))))),
+        );
     }
 }
