@@ -280,7 +280,7 @@ impl<'a> CountedPartialNode<'a> {
                     };
                     let upper_index = match &lower {
                         None => 2,
-                        Some(node) => node.count,
+                        Some(node) => node.count + 2,
                     };
                     let upper = match CountedNode::delimited_from_tokens(
                         false,
