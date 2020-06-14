@@ -96,7 +96,13 @@ impl<'a> Node<'a> {
                     }
                     Self::Concat(vec)
                 }
-                Self::Slice { .. } => unreachable!(),
+                Self::Slice { .. } => {
+                    if let PartialNode::Slice { .. } = partial_node {
+                        self.merge_careless(partial_node)
+                    } else {
+                        unreachable!()
+                    }
+                }
                 Self::Equal { left, right } => {
                     if let PartialNode::Equal(another_right) = partial_node {
                         Self::Equal {
