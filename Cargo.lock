@@ -3,3 +3,10 @@
 [[package]]
 name = "stringed"
 version = "0.1.0"
+dependencies = [
+ "stringed_core",
+]
+
+[[package]]
+name = "stringed_core"
+version = "0.1.0"
