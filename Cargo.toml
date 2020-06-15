@@ -3,4 +3,5 @@
 members = [
     "cli",
     "core",
+    "wasm_core",
 ]
