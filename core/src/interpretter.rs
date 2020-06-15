@@ -2,7 +2,7 @@ use crate::parser::Node;
 
 pub struct Interpretter<I, O>
 where
-    I: Fn() -> Result<String, String>,
+    I: Fn() -> String,
     O: Fn(&str) -> (),
 {
     input: I,
@@ -11,7 +11,7 @@ where
 }
 impl<I, O> Interpretter<I, O>
 where
-    I: Fn() -> Result<String, String>,
+    I: Fn() -> String,
     O: Fn(&str) -> (),
 {
     pub fn new(input: I, output: O) -> Self {
@@ -52,7 +52,7 @@ where
         match node {
             Node::Literal(content) => Ok(content.to_string()),
             Node::Group(node) => self.eval(var, node),
-            Node::Prompt => Ok((self.input)()?),
+            Node::Prompt => Ok((self.input)()),
             Node::Var => Ok(var.to_string()),
             Node::Closure { left, right } => self.eval(&self.eval(var, left)?, right),
             Node::Concat(vec) => {

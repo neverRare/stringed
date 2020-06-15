@@ -121,10 +121,9 @@ impl Command {
                     || {
                         let mut input = String::new();
                         if let Err(reason) = io::stdin().read_line(&mut input) {
-                            Err(reason.to_string())
-                        } else {
-                            Ok(input.trim_end().to_string())
+                            panic!("Unable to read from input: {}", reason);
                         }
+                        input.trim_end().to_string()
                     },
                     |string| {
                         println!("{}", string);
