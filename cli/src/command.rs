@@ -1,5 +1,5 @@
-use crate::interpretter::Interpretter;
 use std::{env, fs, io};
+use stringed_core::Interpretter;
 
 const VERSION: &str = concat!(
     env!("CARGO_PKG_VERSION_MAJOR"),
