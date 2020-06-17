@@ -1,3 +1,4 @@
+use crate::utils::parse_uint;
 use crate::parser::Node;
 
 pub struct Interpretter<I, O>
@@ -65,11 +66,11 @@ where
             Node::Slice { src, lower, upper } => {
                 let src = self.eval(var, src)?;
                 let lower = match lower {
-                    Some(node) => parse_int(&self.eval(var, node)?)?,
+                    Some(node) => parse_uint(&self.eval(var, node)?)?,
                     None => 0,
                 };
                 let upper = match upper {
-                    Some(node) => parse_int(&self.eval(var, node)?)?,
+                    Some(node) => parse_uint(&self.eval(var, node)?)?,
                     None => src.len(),
                 };
                 if upper > src.len() {
@@ -91,11 +92,5 @@ where
         self.run_node("", &Node::parse(src)?)?;
         (self.output)(&self.queue);
         Ok(())
-    }
-}
-pub fn parse_int(a: &str) -> Result<usize, String> {
-    match a.parse() {
-        Ok(num) => Ok(num),
-        Err(reason) => Err(reason.to_string()),
     }
 }

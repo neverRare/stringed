@@ -1,4 +1,4 @@
-use crate::interpretter::parse_int;
+use crate::utils::parse_uint;
 use crate::parser::Node;
 
 #[derive(Debug)]
@@ -130,7 +130,7 @@ var.len() = {}",
                 }
                 OpCode::Slice { lower, upper } => {
                     let upper = if upper {
-                        match parse_int(&val.pop().unwrap()) {
+                        match parse_uint(&val.pop().unwrap()) {
                             Ok(val) => Some(val),
                             Err(reason) => break Output::Error(reason),
                         }
@@ -138,7 +138,7 @@ var.len() = {}",
                         None
                     };
                     let lower = if lower {
-                        match parse_int(&val.pop().unwrap()) {
+                        match parse_uint(&val.pop().unwrap()) {
                             Ok(val) => val,
                             Err(reason) => break Output::Error(reason),
                         }
