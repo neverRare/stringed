@@ -93,7 +93,7 @@ where
         Ok(())
     }
 }
-fn parse_int(a: &str) -> Result<usize, String> {
+pub fn parse_int(a: &str) -> Result<usize, String> {
     match a.parse() {
         Ok(num) => Ok(num),
         Err(reason) => Err(reason.to_string()),
