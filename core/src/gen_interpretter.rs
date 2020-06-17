@@ -1,5 +1,5 @@
-use crate::utils::parse_uint;
 use crate::parser::Node;
+use crate::utils::parse_uint;
 
 #[derive(Debug)]
 enum OpCode {
@@ -290,5 +290,27 @@ Hello "
             let result = program.next(None);
             assert_eq!(Output::Output("\n".to_string()), result);
         }
+    }
+    #[test]
+    fn multiple_input() {
+        let mut program = GenInterpretter::start(r#"(? + ?)[:]"#);
+        let result = program.next(None);
+        assert_eq!(Output::Input, result);
+        let result = program.next(Some("cherry"));
+        assert_eq!(Output::Input, result);
+        let result = program.next(Some("donut"));
+        assert_eq!(Output::Output("cherrydonut".to_string()), result);
+        let result = program.next(None);
+        assert_eq!(Output::Done, result);
+    }
+    #[test]
+    fn banana() {
+        let mut program = GenInterpretter::start(r#""a": "b" + _ + ("n" + _ + "n": _) + _"#);
+        for a in &["b", "a", "nan", "a"] {
+            let result = program.next(None);
+            assert_eq!(Output::Output(a.to_string()), result);
+        }
+        let result = program.next(None);
+        assert_eq!(Output::Done, result);
     }
 }
