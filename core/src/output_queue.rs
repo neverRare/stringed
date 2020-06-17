@@ -18,4 +18,9 @@ impl OutputQueue {
         self.0 = queue[i..].to_string();
         vec
     }
+    pub fn left(&mut self) -> String {
+        let string = self.0.to_string();
+        self.0 = String::new();
+        string
+    }
 }
