@@ -12,7 +12,7 @@ impl OutputQueue {
         let mut vec = Vec::new();
         let mut i = 0;
         while let Some(pos) = find_newline(&queue[i..]) {
-            vec.push(queue[i..pos].to_string());
+            vec.push(queue[i..pos].trim_end().to_string());
             i = pos;
         }
         self.0 = queue[i..].to_string();
