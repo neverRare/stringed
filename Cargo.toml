@@ -1,7 +1,9 @@
 [workspace]
-
 members = [
     "cli",
     "core",
     "wasm_core",
 ]
+
+[profile.release.wasm_core]
+opt-level = "s"
