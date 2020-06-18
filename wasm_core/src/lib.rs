@@ -1,3 +1,4 @@
+use stringed_core::gen_interpretter::{GenInterpretter, Output as GenOutput};
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -7,28 +8,48 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
+#[repr(u8)]
+#[derive(Copy, Clone)]
+pub enum OutputStatus {
+    Output = 0,
+    Input = 1,
+    Error = 3,
+    Done = 4,
+}
+#[wasm_bindgen]
+pub struct Output {
+    pub status: OutputStatus,
+    pub value: Option<String>,
+}
+#[wasm_bindgen]
 pub struct Interpretter {
-    interpretter: stringed_core::Interpretter<
-        Box<dyn Fn() -> String>,
-        Box<dyn Fn(&str) -> ()>,
-    >,
+    interpretter: GenInterpretter,
 }
 #[wasm_bindgen]
 impl Interpretter {
-    pub fn new(input: js_sys::Function, output: js_sys::Function) -> Self {
+    pub fn start(code: &str) -> Self {
         Self {
-            interpretter: stringed_core::Interpretter::new(
-                Box::new(move || input.call0(&JsValue::NULL).unwrap().as_string().unwrap()),
-                Box::new(move |string| {
-                    output.call1(&JsValue::NULL, &JsValue::from_str(string)).unwrap();
-                }),
-            ),
+            interpretter: GenInterpretter::start(code),
         }
     }
-    pub fn run(&mut self, code: &str) -> String {
-        match self.interpretter.run(code) {
-            Ok(_) => "".to_string(),
-            Err(reason) => reason,
+    pub fn next(&mut self, input: Option<&str>) -> Output {
+        match self.interpretter.next(input) {
+            GenOutput::Output(output) => Output {
+                status: OutputStatus::Output,
+                value: Some(output),
+            },
+            GenOutput::Input => Output {
+                status: OutputStatus::Input,
+                value: None,
+            },
+            GenOutput::Error(reason) => Output {
+                status: OutputStatus::Error,
+                value: Some(reason),
+            },
+            GenOutput::Done => Output {
+                status: OutputStatus::Done,
+                value: None,
+            },
         }
     }
 }
