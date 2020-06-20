@@ -46,7 +46,7 @@ Stringed have eval, and we can manipulate the string before it gets evaluated.
 The following accepts a single boolean digit and the string of code. inputing `"1" + {"thing"}` would return `thing`, and `"0" + {"thing"}` return empty string.
 
 ```txt
-$ $ {({""} + } + "{" + _["1":] + "}" + {)[} + ":"[_[:"1"]:] + {"2"} + ":"[:_[:"1"]] + {]}
+$ $ "{" + {""} + _["1":] + "}[" + ":"[_[:"1"]:] + {"2"} + ":"[:_[:"1"]] + "]"
 ```
 
 TODO more explanation
