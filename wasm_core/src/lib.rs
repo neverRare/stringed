@@ -18,8 +18,17 @@ pub enum OutputStatus {
 }
 #[wasm_bindgen]
 pub struct Output {
-    pub status: OutputStatus,
-    pub value: Option<String>,
+    status: OutputStatus,
+    value: Option<String>,
+}
+#[wasm_bindgen]
+impl Output {
+    pub fn status(&self) -> OutputStatus {
+        self.status
+    }
+    pub fn value(self) -> Option<String> {
+        self.value
+    }
 }
 #[wasm_bindgen]
 pub struct Interpretter {
