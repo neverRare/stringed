@@ -41,7 +41,11 @@ impl Interpretter {
             interpretter: GenInterpretter::start(code),
         }
     }
-    pub fn next(&mut self, input: Option<&str>) -> Output {
+    pub fn next(&mut self, input: Option<String>) -> Output {
+        let input = match &input {
+            Some(input) => Some(&input[..]),
+            None => None,
+        };
         match self.interpretter.next(input) {
             GenOutput::Output(output) => Output {
                 status: OutputStatus::Output,
