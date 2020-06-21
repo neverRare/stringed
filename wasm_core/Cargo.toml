@@ -12,7 +12,6 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 stringed_core = { path = "../core" }
-js-sys = "0.3.40"
 wasm-bindgen = "0.2.63"
 console_error_panic_hook = { version = "0.1.6", optional = true }
 wee_alloc = { version = "0.4.5", optional = true }

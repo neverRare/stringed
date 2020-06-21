@@ -98,7 +98,6 @@ name = "stringed_wasm_core"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "js-sys",
  "stringed_core",
  "wasm-bindgen",
  "wasm-bindgen-test",
