@@ -1,10 +1,14 @@
 # Stringed Computation
 
+This doc explains high-level computation on Stringed. It assumes you know syntax and semantics of Stringed and how it is executed, as well as few programming concepts. I am a noob so I can't gurantee the correctness of this doc.
+
 ## Boolean Operation
 
 Boolean value can be encoded in string with `true` or `false`, this is exactly what equal operation returns. But, we could use `1` or `0` instead, it is shorter and readily usable with slice.
 
-The following expression converts `true` or `false` to `1` or `0` respectively. Assuming `_` is the operand, you may want to use closure here.
+Let's call `true` and `false` stringified bollean and `1` and `0` boolean digit.
+
+The following expression converts stringified boolean to boolean digit. Assuming `_` is the operand, you may want to use closure here.
 
 ```txt
 "----10"[#_:][:"1"]
@@ -16,7 +20,7 @@ And the following does the opposite.
 $ {"falsetrue"[} + ":"[_:] + {"5"} + ":"[:_] + {]}
 ```
 
-The following are few boolean operation, accepting `1` or `0` and returning `1` or `0`, for "and" and "or" operations, it accepts two digits of `1` or `0`.
+The following are few boolean operation, accepting and returning boolean digit. For "and" and "or" operations, it accepts two digits of it, you may need to concat it.
 
 ```txt
 NOT
@@ -37,7 +41,15 @@ We could simulate arithmetic operation by manipulating the length of string, add
 
 Additionally, we can't yet convert stringified number to a string with that length.
 
-TODO more explanation
+## String Operation
+
+Well, duh.
+
+## Compounded data
+
+Stringed only have 1 variable name `_`, there can be multiple variables but it shadows any variables on higher scope. We may need to store many data in single string.
+
+TODO
 
 ## Control Flow
 
@@ -56,9 +68,7 @@ TODO more explanation
 The following is the key for recursion.
 
 ```txt
-{code}: $ "{" + _ + "}: " + _
+$ "_: " + _
 ```
 
-Basically, the `_` in the code is also the code in string, we can eval this and therefore achieve recursion, we may preferably conditionally eval it to avoid infinite recursion.
-
-TODO more explanation
+TODO
