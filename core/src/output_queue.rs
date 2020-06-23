@@ -1,5 +1,3 @@
-use crate::utils::find_newline;
-
 #[derive(Default)]
 pub struct OutputQueue(String);
 impl OutputQueue {
@@ -11,7 +9,7 @@ impl OutputQueue {
         queue.push_str(string);
         let mut vec = Vec::new();
         let mut i = 0;
-        while let Some(pos) = find_newline(&queue[i..]) {
+        while let Some(pos) = queue[i..].find('\n').map(|i| i + 1) {
             vec.push(queue[i..pos].trim_end().to_string());
             i = pos;
         }
