@@ -3,16 +3,16 @@ use crate::output_queue::OutputQueue;
 
 pub struct Interpretter<I, O>
 where
-    I: Fn() -> String,
-    O: Fn(&str) -> (),
+    I: FnMut() -> String,
+    O: FnMut(&str) -> (),
 {
     input: I,
     output: O,
 }
 impl<I, O> Interpretter<I, O>
 where
-    I: Fn() -> String,
-    O: Fn(&str) -> (),
+    I: FnMut() -> String,
+    O: FnMut(&str) -> (),
 {
     pub fn new(input: I, output: O) -> Self {
         Self { input, output }
