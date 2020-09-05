@@ -1,16 +1,16 @@
 import upperInit, {
-    Interpretter as GenInterpretter,
+    Interpreter as GenInterpreter,
     Output,
     OutputStatus,
 } from "stringed-wasm-core";
 
-export class Interpretter {
+export class Interpreter {
     constructor(
         private input: () => Promise<string>,
         private output: (output: string) => Promise<void>,
     ) {}
     async run(code: string): Promise<void> {
-        const interpretter = GenInterpretter.start(code);
+        const interpreter = GenInterpreter.start(code);
         let result: null | Output = null;
         while (true) {
             let input: null | string = null;
@@ -24,18 +24,18 @@ export class Interpretter {
                         result.free();
                         break;
                     case OutputStatus.Error:
-                        interpretter.free();
+                        interpreter.free();
                         throw new Error(result.value()!);
                     case OutputStatus.Done:
                         result.free();
-                        interpretter.free();
+                        interpreter.free();
                         return;
                 }
             }
-            result = interpretter.next(input ?? undefined);
+            result = interpreter.next(input ?? undefined);
         }
     }
 }
 export async function init(): Promise<void> {
-    await upperInit(fetch("./interpretter.wasm"));
+    await upperInit(fetch("./interpreter.wasm"));
 }

@@ -25,12 +25,12 @@ enum OpEvalExec<'a> {
     Eval(Node<'a>),
     Exec(Node<'a>),
 }
-pub struct GenInterpretter {
+pub struct GenInterpreter {
     var: Vec<String>,
     val: Vec<String>,
     op: Vec<OpCode>,
 }
-impl GenInterpretter {
+impl GenInterpreter {
     pub fn start(code: &str) -> Self {
         Self {
             val: vec![code.to_string()],
@@ -49,7 +49,7 @@ impl GenInterpretter {
                     if !val.is_empty() || !var.is_empty() {
                         panic!(
                             "\
-generator interpretter exited with non-empty value or variable stack:
+generator interpreter exited with non-empty value or variable stack:
 val.len() = {}
 var.len() = {}",
                             val.len(),
@@ -237,7 +237,7 @@ mod test {
     use super::*;
     #[test]
     fn hello_world() {
-        let mut program = GenInterpretter::start(r#""Hello world""#);
+        let mut program = GenInterpreter::start(r#""Hello world""#);
         let result = program.next(None);
         assert_eq!(Output::Output("Hello world".to_string()), result);
         let result = program.next(None);
@@ -245,7 +245,7 @@ mod test {
     }
     #[test]
     fn hello_you() {
-        let mut program = GenInterpretter::start(
+        let mut program = GenInterpreter::start(
             r#""Please enter your name:
 Hello " + ? + "!""#,
         );
@@ -260,8 +260,8 @@ Hello "
         );
         let result = program.next(None);
         assert_eq!(Output::Input, result);
-        let result = program.next(Some("Random Rustaecean"));
-        assert_eq!(Output::Output("Random Rustaecean".to_string()), result);
+        let result = program.next(Some("Random Rustacean"));
+        assert_eq!(Output::Output("Random Rustacean".to_string()), result);
         let result = program.next(None);
         assert_eq!(Output::Output("!".to_string()), result);
         let result = program.next(None);
@@ -269,7 +269,7 @@ Hello "
     }
     #[test]
     fn r#loop() {
-        let mut program = GenInterpretter::start(
+        let mut program = GenInterpreter::start(
             r#"{"loop
 " + $ _}: $ "{" + _ + "}: " + _"#,
         );
@@ -280,7 +280,7 @@ Hello "
     }
     #[test]
     fn counter() {
-        let mut program = GenInterpretter::start(
+        let mut program = GenInterpreter::start(
             r#""
 ": ($ "{#(_[{" + #(_ + "--------------------------------") + "}:]) + {" + _ + "} + (_ + { }: $ _)}"): $ "{" + _ + "}: " + _"#,
         );
@@ -293,7 +293,7 @@ Hello "
     }
     #[test]
     fn multiple_input() {
-        let mut program = GenInterpretter::start(r#"(? + ?)[:]"#);
+        let mut program = GenInterpreter::start(r#"(? + ?)[:]"#);
         let result = program.next(None);
         assert_eq!(Output::Input, result);
         let result = program.next(Some("cherry"));
@@ -305,7 +305,7 @@ Hello "
     }
     #[test]
     fn banana() {
-        let mut program = GenInterpretter::start(r#""a": "b" + _ + ("n" + _ + "n": _) + _"#);
+        let mut program = GenInterpreter::start(r#""a": "b" + _ + ("n" + _ + "n": _) + _"#);
         for a in &["b", "a", "nan", "a"] {
             let result = program.next(None);
             assert_eq!(Output::Output(a.to_string()), result);

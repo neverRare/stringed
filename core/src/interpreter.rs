@@ -1,7 +1,7 @@
-use crate::gen_interpretter::{GenInterpretter, Output};
+use crate::gen_interpreter::{GenInterpreter, Output};
 use crate::output_queue::OutputQueue;
 
-pub struct Interpretter<I, O>
+pub struct Interpreter<I, O>
 where
     I: FnMut() -> String,
     O: FnMut(&str) -> (),
@@ -9,7 +9,7 @@ where
     input: I,
     output: O,
 }
-impl<I, O> Interpretter<I, O>
+impl<I, O> Interpreter<I, O>
 where
     I: FnMut() -> String,
     O: FnMut(&str) -> (),
@@ -18,7 +18,7 @@ where
         Self { input, output }
     }
     pub fn run(&mut self, src: &str) -> Result<(), String> {
-        let mut interpretter = GenInterpretter::start(src);
+        let mut interpreter = GenInterpreter::start(src);
         let mut queue = OutputQueue::new();
         let mut result = None;
         loop {
@@ -43,7 +43,7 @@ where
             } else {
                 input = None;
             }
-            result = Some(interpretter.next(match &input {
+            result = Some(interpreter.next(match &input {
                 Some(x) => Some(&x),
                 None => None,
             }));

@@ -1,5 +1,5 @@
 use std::{env, fs, io};
-use stringed_core::Interpretter;
+use stringed_core::Interpreter;
 
 const VERSION: &str = concat!(
     env!("CARGO_PKG_VERSION_MAJOR"),
@@ -39,7 +39,7 @@ options:
 
 const HELP_VERSION: &str = "\
 VERSION
-displays the version of stringed interpretter
+displays the version of stringed interpreter
 
 usage:
   stringed version";
@@ -117,7 +117,7 @@ impl Command {
                     Ok(content) => content,
                     Err(reason) => return Err(reason.to_string()),
                 };
-                let mut interpretter = Interpretter::new(
+                let mut interpreter = Interpreter::new(
                     || {
                         let mut input = String::new();
                         if let Err(reason) = io::stdin().read_line(&mut input) {
@@ -129,7 +129,7 @@ impl Command {
                         println!("{}", string);
                     },
                 );
-                interpretter.run(&content)?;
+                interpreter.run(&content)?;
             }
             Self::Help(command) => command.print_help(),
             Self::Version => println!("STRINGED {}", VERSION),

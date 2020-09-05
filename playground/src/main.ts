@@ -1,4 +1,4 @@
-import { Interpretter, init } from "./interpretter";
+import { Interpreter, init } from "./interpreter";
 import { OutputQueue } from "./output_queue";
 
 const inputBox = document.getElementById("code")! as HTMLTextAreaElement;
@@ -19,7 +19,7 @@ async function run(code: string): Promise<void> {
         outputBox.removeChild(outputBox.firstChild!);
     }
     const queue = new OutputQueue();
-    const interpretter = new Interpretter(
+    const interpreter = new Interpreter(
         () =>
             new Promise((res) => {
                 const inputText = document.createElement("input");
@@ -41,7 +41,7 @@ async function run(code: string): Promise<void> {
             }
         },
     );
-    await interpretter.run(code);
+    await interpreter.run(code);
     await outputText(queue.left());
 }
 init().then(() => {

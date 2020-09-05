@@ -203,4 +203,4 @@ Stringed expression on top level are executed.
 
 ## Output queue
 
-The stringed interpretter internally have queue for output. Whenever the stringed code outputs a string, it is first goes to queue, then it is only printed on standard output on every newline (LF or CRLF). When the stringed code is done executing, the remaining string on queue is printed as well.
+The stringed interpreter internally have queue for output. Whenever the stringed code outputs a string, it is first goes to queue, then it is only printed on standard output on every newline (LF or CRLF). When the stringed code is done executing, the remaining string on queue is printed as well.
