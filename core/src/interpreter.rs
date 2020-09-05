@@ -4,7 +4,7 @@ use crate::output_queue::OutputQueue;
 pub struct Interpreter<I, O>
 where
     I: FnMut() -> String,
-    O: FnMut(&str) -> (),
+    O: FnMut(&str),
 {
     input: I,
     output: O,
@@ -12,7 +12,7 @@ where
 impl<I, O> Interpreter<I, O>
 where
     I: FnMut() -> String,
-    O: FnMut(&str) -> (),
+    O: FnMut(&str),
 {
     pub fn new(input: I, output: O) -> Self {
         Self { input, output }
