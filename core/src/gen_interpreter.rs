@@ -1,4 +1,3 @@
-use crate::parser::Node;
 use crate::utils::parse_uint;
 
 #[derive(Debug)]
@@ -15,15 +14,6 @@ enum OpCode {
     Length,
     Eval,
     Value(String),
-}
-enum OpNode<'a> {
-    OpCode(OpCode),
-    Node(Node<'a>),
-}
-enum OpEvalExec<'a> {
-    OpCode(OpCode),
-    Eval(Node<'a>),
-    Exec(Node<'a>),
 }
 pub struct GenInterpreter {
     var: Vec<String>,
@@ -65,41 +55,7 @@ var.len() = {}",
                     let output = val.pop().unwrap();
                     break Output::Output(output);
                 }
-                OpCode::Exec => {
-                    let code = val.pop().unwrap();
-                    let mut op_nodes = match Node::parse(&code) {
-                        Ok(node) => vec![OpEvalExec::Exec(node)],
-                        Err(reason) => break Output::Error(reason),
-                    };
-                    while let Some(op_node) = op_nodes.pop() {
-                        match op_node {
-                            OpEvalExec::Exec(Node::Group(node)) => {
-                                op_nodes.push(OpEvalExec::Exec(*node));
-                            }
-                            OpEvalExec::Exec(Node::Closure { left, right }) => {
-                                op.push(OpCode::Close);
-                                op_nodes.push(OpEvalExec::Eval(*left));
-                                op_nodes.push(OpEvalExec::OpCode(OpCode::Open));
-                                op_nodes.push(OpEvalExec::Exec(*right));
-                            }
-                            OpEvalExec::Exec(Node::Concat(nodes)) => {
-                                for node in nodes {
-                                    op_nodes.push(OpEvalExec::Exec(node));
-                                }
-                            }
-                            OpEvalExec::Exec(Node::Eval(node)) => {
-                                op.push(OpCode::Exec);
-                                op_nodes.push(OpEvalExec::Eval(*node));
-                            }
-                            OpEvalExec::Exec(node) => {
-                                op.push(OpCode::Output);
-                                push_node(op, node);
-                            }
-                            OpEvalExec::Eval(node) => push_node(op, node),
-                            OpEvalExec::OpCode(op_code) => op.push(op_code),
-                        }
-                    }
-                }
+                OpCode::Exec => todo!(),
                 OpCode::Concat(len) => {
                     let mut result = String::new();
                     for _ in 0..len {
@@ -166,62 +122,9 @@ var.len() = {}",
                     let len = val.pop().unwrap().len().to_string();
                     val.push(len);
                 }
-                OpCode::Eval => match Node::parse(&val.pop().unwrap()) {
-                    Ok(node) => push_node(op, node),
-                    Err(reason) => break Output::Error(reason),
-                },
+                OpCode::Eval => todo!(),
                 OpCode::Value(value) => val.push(value),
             }
-        }
-    }
-}
-fn push_node(op: &mut Vec<OpCode>, node: Node) {
-    let mut op_nodes = vec![OpNode::Node(node)];
-    while let Some(op_node) = op_nodes.pop() {
-        match op_node {
-            OpNode::Node(Node::Literal(content)) => op.push(OpCode::Value(content.to_string())),
-            OpNode::Node(Node::Group(node)) => op_nodes.push(OpNode::Node(*node)),
-            OpNode::Node(Node::Prompt) => op.push(OpCode::Prompt),
-            OpNode::Node(Node::Var) => op.push(OpCode::Var),
-            OpNode::Node(Node::Closure { left, right }) => {
-                op.push(OpCode::Close);
-                op_nodes.push(OpNode::Node(*left));
-                op_nodes.push(OpNode::OpCode(OpCode::Open));
-                op_nodes.push(OpNode::Node(*right));
-            }
-            OpNode::Node(Node::Concat(nodes)) => {
-                op.push(OpCode::Concat(nodes.len()));
-                for node in nodes {
-                    op_nodes.push(OpNode::Node(node));
-                }
-            }
-            OpNode::Node(Node::Slice { src, lower, upper }) => {
-                op.push(OpCode::Slice {
-                    lower: lower.is_some(),
-                    upper: upper.is_some(),
-                });
-                op_nodes.push(OpNode::Node(*src));
-                if let Some(node) = lower {
-                    op_nodes.push(OpNode::Node(*node));
-                }
-                if let Some(node) = upper {
-                    op_nodes.push(OpNode::Node(*node));
-                }
-            }
-            OpNode::Node(Node::Equal { left, right }) => {
-                op.push(OpCode::Equal);
-                op_nodes.push(OpNode::Node(*left));
-                op_nodes.push(OpNode::Node(*right));
-            }
-            OpNode::Node(Node::Length(node)) => {
-                op.push(OpCode::Length);
-                op_nodes.push(OpNode::Node(*node));
-            }
-            OpNode::Node(Node::Eval(node)) => {
-                op.push(OpCode::Eval);
-                op_nodes.push(OpNode::Node(*node));
-            }
-            OpNode::OpCode(op_code) => op.push(op_code),
         }
     }
 }
