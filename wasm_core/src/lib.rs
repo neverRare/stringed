@@ -63,6 +63,7 @@ impl Interpreter {
                 status: OutputStatus::Done,
                 value: None,
             },
+            GenOutput::None => unreachable!(),
         }
     }
 }
