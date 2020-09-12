@@ -1,15 +1,16 @@
-use crate::utils::parse_uint;
-
 #[derive(Debug)]
 enum OpCode {
     Output,
     Exec,
-    Concat(usize),
+    Concat,
     Prompt,
-    Var,
-    Open,
-    Close,
-    Slice { lower: bool, upper: bool },
+    LastVar,
+    PushVar,
+    PopVar,
+    SliceAll,
+    SliceTo,
+    SliceFrom,
+    SliceFromTo,
     Equal,
     Length,
     Eval,
@@ -25,7 +26,7 @@ impl GenInterpreter {
         Self {
             val: vec![code.to_string()],
             var: vec!["".to_string()],
-            op: vec![OpCode::Close, OpCode::Exec],
+            op: vec![OpCode::PopVar, OpCode::Exec],
         }
     }
     pub fn next(&mut self, mut input: Option<&str>) -> Output {
@@ -56,15 +57,7 @@ var.len() = {}",
                     break Output::Output(output);
                 }
                 OpCode::Exec => todo!(),
-                OpCode::Concat(len) => {
-                    let mut result = String::new();
-                    for _ in 0..len {
-                        let more = result;
-                        result = val.pop().unwrap();
-                        result.push_str(&more);
-                    }
-                    val.push(result);
-                }
+                OpCode::Concat => todo!(),
                 OpCode::Prompt => match input {
                     Some(value) => {
                         val.push(value.to_string());
@@ -75,44 +68,19 @@ var.len() = {}",
                         break Output::Input;
                     }
                 },
-                OpCode::Var => {
+                OpCode::LastVar => {
                     val.push(var.last().unwrap().to_string());
                 }
-                OpCode::Open => {
+                OpCode::PushVar => {
                     var.push(val.pop().unwrap());
                 }
-                OpCode::Close => {
+                OpCode::PopVar => {
                     var.pop().unwrap();
                 }
-                OpCode::Slice { lower, upper } => {
-                    let upper = if upper {
-                        match parse_uint(&val.pop().unwrap()) {
-                            Ok(val) => Some(val),
-                            Err(reason) => break Output::Error(reason),
-                        }
-                    } else {
-                        None
-                    };
-                    let lower = if lower {
-                        match parse_uint(&val.pop().unwrap()) {
-                            Ok(val) => val,
-                            Err(reason) => break Output::Error(reason),
-                        }
-                    } else {
-                        0
-                    };
-                    let src = val.pop().unwrap();
-                    let upper = upper.unwrap_or_else(|| src.len());
-                    if upper > src.len() {
-                        break Output::Error(
-                            "upper bound larger than the length of string".to_string(),
-                        );
-                    } else if lower > upper {
-                        break Output::Error("lower bound larger than upper bound".to_string());
-                    } else {
-                        val.push(src[lower..upper].to_string());
-                    }
-                }
+                OpCode::SliceAll => todo!(),
+                OpCode::SliceFrom => todo!(),
+                OpCode::SliceTo => todo!(),
+                OpCode::SliceFromTo => todo!(),
                 OpCode::Equal => {
                     let first = val.pop().unwrap();
                     let second = val.pop().unwrap();
