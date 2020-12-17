@@ -105,6 +105,7 @@ pub enum Output {
 mod test {
     use super::*;
     #[test]
+    #[ignore]
     fn hello_world() {
         let mut program = GenInterpreter::start(r#""Hello world""#);
         let result = program.next(None);
@@ -113,6 +114,7 @@ mod test {
         assert_eq!(Output::Done, result);
     }
     #[test]
+    #[ignore]
     fn hello_you() {
         let mut program = GenInterpreter::start(
             r#""Please enter your name:
@@ -137,6 +139,7 @@ Hello "
         assert_eq!(Output::Done, result);
     }
     #[test]
+    #[ignore]
     fn r#loop() {
         let mut program = GenInterpreter::start(
             r#"{"loop
@@ -148,6 +151,7 @@ Hello "
         }
     }
     #[test]
+    #[ignore]
     fn counter() {
         let mut program = GenInterpreter::start(
             r#""
@@ -161,6 +165,7 @@ Hello "
         }
     }
     #[test]
+    #[ignore]
     fn multiple_input() {
         let mut program = GenInterpreter::start(r#"(? + ?)[:]"#);
         let result = program.next(None);
@@ -173,6 +178,7 @@ Hello "
         assert_eq!(Output::Done, result);
     }
     #[test]
+    #[ignore]
     fn banana() {
         let mut program = GenInterpreter::start(r#""a": "b" + _ + ("n" + _ + "n": _) + _"#);
         for a in &["b", "a", "nan", "a"] {
