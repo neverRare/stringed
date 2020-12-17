@@ -1,6 +1,9 @@
 # Stringed
 
-[![Rust](https://github.com/neverRare/stringed/workflows/Rust/badge.svg)](https://github.com/neverRare/stringed/actions?query=workflow%3ARust)
+[![Rust][Rust CI Status]][Rust CI Link]
+
+[Rust CI Status]: https://github.com/neverRare/stringed/workflows/Rust/badge.svg
+[Rust CI Link]: https://github.com/neverRare/stringed/actions?query=workflow%3ARust
 
 An esolang with first-class strings.
 
@@ -9,6 +12,8 @@ An esolang with first-class strings.
 TODO
 
 ## Examples
+
+TODO: update examples: closure syntax is updated and removed output queue
 
 ```txt
 "Hello world!"
@@ -21,7 +26,7 @@ Hello " + ? + "!"
 
 ```txt
 {"loop
-" + $ _}: $ "_: " + _
+" + $ _} | $ "_ | " + _
 ```
 
 ```txt
@@ -46,7 +51,7 @@ The following are syntax of Stringed code representing its few operation. The ca
 | `(A)`              | Group   |
 | `?`                | Prompt  |
 | `_`                | Var     |
-| `A:B`              | Closure |
+| `A|B`              | Closure |
 | `A+B`              | Concat  |
 | `A[B:C]`           | Slice   |
 | `A=B`              | Equal   |
@@ -121,29 +126,29 @@ Error: Lower bound is larger than upper bound
 Closure creates a scope in which gives variable `_` a value: It evaluates to the second operand as if the variable is the first operand.
 
 ```txt
-"apple": "my favorite fruit is " + _
+"apple" | "my favorite fruit is " + _
 ```
 
 Closure is right to left associative and the first operand is evaluated first.
 
 ```txt
-A:B:C
+A|B|C
 is evaluated as
-A:(B:C)
+A|(B|C)
 
-A is evaluated first, then B:C
+A is evaluated first, then B|C
 ```
 
 Closure creates a scope in a way variable can be shadowed.
 
 ```txt
-"a": "b" + _ + ("nan": _) + _
+"a" | "b" + _ + ("nan" | _) + _
 ```
 
 The first operand can even use the variable of outer closure.
 
 ```txt
-"a": "b" + _ + ("n" + _ + "n": _) + _
+"a" | "b" + _ + ("n" + _ + "n" | _) + _
 ```
 
 ## Eval
@@ -157,7 +162,7 @@ $ {"evaluation"} + {[:"4"]}
 Evals can also capture variable.
 
 ```txt
-"world": $ {"hello " + _}
+"world" | $ {"hello " + _}
 ```
 
 Literals in `{}` doesn't look like literals, nice!
@@ -200,7 +205,3 @@ Every stringed operation have 2 modes: evaluation and execution. Evaluation mean
 | any other | It is evaluated then outputted                          |
 
 Stringed expression on top level are executed.
-
-## Output queue
-
-The stringed interpreter internally have queue for output. Whenever the stringed code outputs a string, it is first goes to queue, then it is only printed on standard output on every newline (LF or CRLF). When the stringed code is done executing, the remaining string on queue is printed as well.
