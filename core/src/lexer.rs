@@ -32,7 +32,7 @@ impl<'a> Token<'a> {
     }
 }
 fn get_symbol(src: &str) -> Option<Token> {
-    assert_eq!(src.len(), 1);
+    debug_assert_eq!(src.len(), 1);
     Some(match src {
         "(" => Token::OpenParen,
         ")" => Token::CloseParen,
@@ -54,7 +54,7 @@ struct SizedToken<'a> {
     len: usize,
 }
 fn get_quote_str(src: &str) -> Result<SizedToken, &str> {
-    assert_eq!(src.get(0..1), Some("\""));
+    debug_assert_eq!(src.get(0..1), Some("\""));
     for i in 1..src.len() {
         if let Some("\"") = src.get(i..i + 1) {
             return Ok(SizedToken {

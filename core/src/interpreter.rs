@@ -39,6 +39,7 @@ where
                         (self.output)(&queue.left());
                         break Ok(());
                     }
+                    Output::None => unreachable!(),
                 }
             } else {
                 input = None;
