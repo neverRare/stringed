@@ -5,7 +5,7 @@
 [Rust CI Status]: https://github.com/neverRare/stringed/workflows/Rust/badge.svg
 [Rust CI Link]: https://github.com/neverRare/stringed/actions?query=workflow%3ARust
 
-An esolang with first-class strings.
+An esolang with first-class strings. Stringed have utf8 string as the only data type with simple IO and few string operations.
 
 ## Installation
 
@@ -13,33 +13,16 @@ TODO
 
 ## Examples
 
-TODO: update examples: closure syntax is updated and removed output queue
-
 ```txt
 "Hello world!"
 ```
 
 ```txt
-"Please enter your name:
-Hello " + ? + "!"
+"Please enter your name: "+(?|"
+Hello "+_+"!")
 ```
 
-```txt
-{"loop
-" + $ _} | $ "_ | " + _
-```
-
-```txt
-"Counting Program
-" + ("
-": ($ "{#(_[{" + #(_ + "--------------------------------") + "}:]) + {" + _ + "} + (_ + { }: $ _)}"): $ "_: " + _)
-```
-
-## What it is
-
-- UTF-8 string as the only data type
-- have simple IO
-- have few operation
+TODO: FizzBuzz
 
 ## Syntax and Semantics
 
@@ -74,14 +57,14 @@ String literal are enclosed with either double quotation marks `""` or curly bra
 
 It can contain any characters and it doesn't have escaping functionality.
 
-Literals enclosed with `{}` can contain quotation mark or another braces. It can be nested: `{{}}` and `{{{}}{}}` are both valid literal and `{}}` may cause syntax error. It doesn't recognize quotation mark for nesting: `{"{"}` may cause syntax error.
+Literals enclosed with `{}` can contain quotation mark or another braces. It can be nested: `{{}}` and `{{{}}{}}` are both valid literal and `{}}` is a syntax error. It doesn't recognize quotation mark for nesting: `{"{"}` is a syntax error.
 
 ## Basic Operations
 
 Pretty basic, you'll understand it in few examples.
 
 ```txt
-"concat" + "enation"
+"concat"+"enation"
 "concatenation"
 
 "slice"["2":"4"]
@@ -105,10 +88,10 @@ Error: Upper bound is larger than the length
 "slice error"["10":"0"]
 Error: Lower bound is larger than upper bound
 
-"equal" = "equal"
+"equal"="equal"
 "true"
 
-"not equal" = "not really equal"
+"not equal"="not really equal"
 "false"
 
 #"length"
@@ -117,7 +100,7 @@ Error: Lower bound is larger than upper bound
 #"size"
 "4"
 
-("group" + "ings")[:"8"]
+("group"+"ings")[:"8"]
 "grouping"
 ```
 
@@ -126,7 +109,7 @@ Error: Lower bound is larger than upper bound
 Closure creates a scope in which gives variable `_` a value: It evaluates to the second operand as if the variable is the first operand.
 
 ```txt
-"apple" | "my favorite fruit is " + _
+"apple"|"my favorite fruit is "+_
 ```
 
 Closure is right to left associative and the first operand is evaluated first.
@@ -142,13 +125,13 @@ A is evaluated first, then B|C
 Closure creates a scope in a way variable can be shadowed.
 
 ```txt
-"a" | "b" + _ + ("nan" | _) + _
+"a"|"b"+_+("nan"|_)+_
 ```
 
 The first operand can even use the variable of outer closure.
 
 ```txt
-"a" | "b" + _ + ("n" + _ + "n" | _) + _
+"a"|"b"+_+("n"+_+"n"|_)+_
 ```
 
 ## Eval
@@ -156,29 +139,30 @@ The first operand can even use the variable of outer closure.
 Stringed can immediately evaluate strings as Stringed expression and return a... string. We may need to include a literal inside a literal, this is where `{}` can be useful.
 
 ```txt
-$ {"evaluation"} + {[:"4"]}
+${"evaluation"}+{[:"4"]}
 ```
 
 Evals can also capture variable.
 
 ```txt
-"world" | $ {"hello " + _}
+"world"|${"hello "+_}
 ```
 
 Literals in `{}` doesn't look like literals, nice!
 
-## IO
+## IO and execution
 
 Stringed have `?`, when evaluated, it ask the user to input then it is evaluated to that value.
 
 ```txt
-"Hello " + ?
+?|"
+You inputted: "+_
 ```
 
 Stringed also have output, which is pretty weird. It is explained below.
 
 ```txt
-"some" + "thing"
+"some"+"thing"
 ```
 
 When not dealing with input, we could think of stringed code as an expression and it output whatever it evaluates to. The example above could be imagined as the following pseudo-code:

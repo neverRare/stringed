@@ -1,12 +1,12 @@
 # Stringed Computation
 
-This doc explains high-level computation on Stringed. It assumes you know syntax and semantics of Stringed and how it is executed, as well as few programming concepts. I am a noob so I can't gurantee the correctness of this doc.
+This doc explains high-level computation on Stringed.
 
 ## Boolean Operation
 
 Boolean value can be encoded in string with `true` or `false`, this is exactly what equal operation returns. But, we could use `1` or `0` instead, it is shorter and readily usable with slice.
 
-Let's call `true` and `false` stringified bollean and `1` and `0` boolean digit.
+Let's call `true` and `false` stringified boolean and `1` and `0` boolean digit.
 
 The following expression converts stringified boolean to boolean digit. Assuming `_` is the operand, you may want to use closure here.
 
@@ -17,7 +17,7 @@ The following expression converts stringified boolean to boolean digit. Assuming
 And the following does the opposite.
 
 ```txt
-$ {"falsetrue"[} + ":"[_:] + {"5"} + ":"[:_] + {]}
+$"{falsetrue}["+":"[_:]+{"5"}+":"[:_]+"]"
 ```
 
 The following are few boolean operation, accepting and returning boolean digit. For "and" and "or" operations, it accepts two digits of it, you may need to concat it.
@@ -27,10 +27,10 @@ NOT
 "10"[_:][:"1"]
 
 AND
-("0" + _["1":])[_[:"1"]:][:"1"]
+("0"+_["1":])[_[:"1"]:][:"1"]
 
 OR
-(_["1":] + "1")[_[:"1"]:][:"1"]
+(_["1":]+"1")[_[:"1"]:][:"1"]
 ```
 
 ## Arithmetic Operation
@@ -51,24 +51,24 @@ Stringed only have 1 variable name `_`, there can be multiple variables but it s
 
 TODO
 
-## Control Flow
+## Conditional
 
 Stringed have eval, and we can manipulate the string before it gets evaluated.
 
-The following accepts a single boolean digit and the string of code. inputing `"1" + {"thing"}` would return `thing`, and `"0" + {"thing"}` return empty string.
+The following accepts a single boolean digit and the string of code. inputting `"1"+{"thing"}` would return `thing`, and `"0"+{"thing"}` return empty string.
 
 ```txt
-$ $ "{" + {""} + _["1":] + "}[" + ":"[_[:"1"]:] + {"2"} + ":"[:_[:"1"]] + "]"
+$$"{"+{""}+_["1":]+"}["+":"[_[:"1"]:]+{"2"}+":"[:_[:"1"]]+"]"
 ```
 
 TODO more explanation
 
-## Recusion
+## Recursion
 
 The following is the key for recursion.
 
 ```txt
-$ "_: " + _
+$"_:"+_
 ```
 
 TODO
