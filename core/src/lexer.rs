@@ -53,6 +53,7 @@ impl<'a> Token<'a> {
         None
     }
 }
+// TODO: use iterators instead
 pub fn lex(src: &str) -> Result<Vec<Token>, LexerError> {
     let mut i = 0;
     let mut tokens = Vec::new();
