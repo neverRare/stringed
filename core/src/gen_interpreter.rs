@@ -29,7 +29,7 @@ impl GenInterpreter {
             op: vec![OpCode::PopVar, OpCode::Exec],
         }
     }
-    pub fn step(&mut self, input: Option<&str>) -> Output {
+    pub fn step(&mut self, input: Option<&str>) -> Option<Output> {
         let var = &mut self.var;
         let val = &mut self.val;
         let op = &mut self.op;
@@ -42,12 +42,12 @@ impl GenInterpreter {
             None => {
                 debug_assert!(val.is_empty());
                 debug_assert!(var.is_empty());
-                return Output::Done;
+                return Some(Output::Done);
             }
         };
         match current {
             OpCode::Output => {
-                return Output::Output(val.pop().unwrap());
+                return Some(Output::Output(val.pop().unwrap()));
             }
             OpCode::Exec => todo!(),
             OpCode::Concat => todo!(),
@@ -80,25 +80,21 @@ impl GenInterpreter {
             OpCode::Eval => todo!(),
             OpCode::Value(value) => val.push(value),
         }
-        Output::None
+        None
     }
     pub fn next(&mut self, input: Option<&str>) -> Output {
         loop {
-            let output = self.step(input);
-            if let Output::None = output {
-                continue;
-            } else {
-                return output;
+            match self.step(input) {
+                Some(output) => return output,
+                None => (),
             }
         }
     }
 }
 #[derive(Debug, Eq, PartialEq)]
 pub enum Output {
-    None,
     Output(String),
     Input,
-    Error(String),
     Done,
 }
 #[cfg(test)]

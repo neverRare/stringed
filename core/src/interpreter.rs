@@ -30,11 +30,9 @@ where
                     Output::Input => {
                         input = Some((self.input)());
                     }
-                    Output::Error(reason) => break Err(reason),
                     Output::Done => {
                         break Ok(());
                     }
-                    Output::None => unreachable!(),
                 }
             } else {
                 input = None;
