@@ -54,7 +54,10 @@ impl GenInterpreter {
                 OpCode::Concat => todo!(),
                 OpCode::Prompt => match input {
                     Some(input) => val.push(input.to_string()),
-                    None => op.push(OpCode::Prompt),
+                    None => {
+                        op.push(OpCode::Prompt);
+                        return Some(Output::Input);
+                    }
                 },
                 OpCode::LastVar => {
                     val.push(var.last().unwrap().to_string());
