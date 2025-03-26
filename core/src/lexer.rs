@@ -30,13 +30,13 @@ impl<'a> Token<'a> {
             _ => return None,
         })
     }
-    fn get_quote_str(src: &str) -> Option<(Token, usize)> {
+    fn get_quote_str(src: &'a str) -> Option<(Self, usize)> {
         debug_assert_eq!(src.get(0..1), Some("\""));
         let i = src[1..].find('"')?;
         Some((Token::Literal(&src[1..i + 1]), i + 2))
     }
-    fn get_brace_str(src: &str) -> Option<(Token, usize)> {
-        assert_eq!(src.get(0..1), Some("{"));
+    fn get_brace_str(src: &'a str) -> Option<(Self, usize)> {
+        debug_assert_eq!(src.get(0..1), Some("{"));
         let mut count: usize = 1;
         for (i, ch) in src[1..].char_indices() {
             match ch {
@@ -53,40 +53,41 @@ impl<'a> Token<'a> {
         None
     }
 }
-// TODO: use iterators instead
-pub fn lex(src: &str) -> Result<Vec<Token>, LexerError> {
-    let mut i = 0;
-    let mut tokens = Vec::new();
-    while i < src.len() {
-        match src.chars().next() {
-            Some('{') => {
-                let (token, len) = Token::get_brace_str(&src[i..])
-                    .ok_or(LexerError::UnclosedLiteral(&src[i..]))?;
-                tokens.push(token);
-                i += len;
+pub struct Lexer<'a>(&'a str);
+impl<'a> Lexer<'a> {
+    pub fn new(src: &'a str) -> Self {
+        Lexer(src)
+    }
+}
+impl<'a> Iterator for Lexer<'a> {
+    type Item = Result<Token<'a>, LexerError<'a>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let src = self.0.trim_start();
+        let ch = src.chars().next()?;
+        match ch {
+            '{' => {
+                let (token, len) = match Token::get_brace_str(&src[1..]) {
+                    Some(result) => result,
+                    None => return Some(Err(LexerError::UnclosedLiteral(src))),
+                };
+                self.0 = &src[len..];
+                Some(Ok(token))
             }
-            Some('"') => {
-                let (token, len) = Token::get_quote_str(&src[i..])
-                    .ok_or(LexerError::UnclosedLiteral(&src[i..]))?;
-                tokens.push(token);
-                i += len;
+            '"' => {
+                let (token, len) = match Token::get_quote_str(&src[1..]) {
+                    Some(result) => result,
+                    None => return Some(Err(LexerError::UnclosedLiteral(src))),
+                };
+                self.0 = &src[len..];
+                Some(Ok(token))
             }
-            Some(item) => {
-                i += 1;
-                if item.is_whitespace() {
-                    continue;
-                }
-                match Token::get_symbol(item) {
-                    Some(token) => tokens.push(token),
-                    None => return Err(LexerError::UnknownSymbol(item)),
-                }
-            }
-            None => {
-                i += 1;
-            }
+            item => match Token::get_symbol(item) {
+                Some(token) => Some(Ok(token)),
+                None => return Some(Err(LexerError::UnknownSymbol(item))),
+            },
         }
     }
-    Ok(tokens)
 }
 pub enum LexerError<'a> {
     UnclosedLiteral(&'a str),
