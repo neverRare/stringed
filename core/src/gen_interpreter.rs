@@ -49,8 +49,8 @@ impl GenInterpreter {
                 OpCode::Output => return Ok(Some(Output::Output(val.pop().unwrap()))),
                 OpCode::Exec => todo!(),
                 OpCode::Concat => {
-                    let first = val.pop().unwrap();
                     let second = val.pop().unwrap();
+                    let first = val.pop().unwrap();
                     val.push(first + &second);
                 }
                 OpCode::Prompt => match input.take() {
@@ -66,21 +66,22 @@ impl GenInterpreter {
                     var.pop().unwrap();
                 }
                 OpCode::Slice(left, right) => {
-                    let str = val.pop().unwrap();
-                    let left = if left { val.pop().unwrap().parse()? } else { 0 };
                     let right = if right {
-                        val.pop().unwrap().parse()?
+                        Some(val.pop().unwrap().parse()?)
                     } else {
-                        str.len()
+                        None
                     };
+                    let left = if left { val.pop().unwrap().parse()? } else { 0 };
+                    let str = val.pop().unwrap();
+                    let right = right.unwrap_or(str.len());
                     if str.len() < right || right < left {
                         return Err(Error::InvalidIndex);
                     }
                     val.push(str[left..right].to_owned());
                 }
                 OpCode::Equal => {
-                    let first = val.pop().unwrap();
                     let second = val.pop().unwrap();
+                    let first = val.pop().unwrap();
                     val.push(format!("{}", first == second));
                 }
                 OpCode::Length => {
