@@ -24,6 +24,7 @@ where
             if let Some(result) = result {
                 match result {
                     Output::Output(output) => {
+                        write!(&mut self.output, "{}", output)?;
                         self.output.write(output.as_bytes())?;
                         input = None;
                     }
