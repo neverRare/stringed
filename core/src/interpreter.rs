@@ -1,5 +1,4 @@
 use crate::gen_interpreter::{GenInterpreter, Output};
-use crate::output_queue::OutputQueue;
 
 pub struct Interpreter<I, O>
 where
@@ -19,16 +18,13 @@ where
     }
     pub fn run(&mut self, src: &str) -> Result<(), String> {
         let mut interpreter = GenInterpreter::start(src);
-        let mut queue = OutputQueue::new();
         let mut result = None;
         loop {
             let input;
             if let Some(result) = result {
                 match result {
                     Output::Output(output) => {
-                        for output in queue.insert(&output) {
-                            (self.output)(&output);
-                        }
+                        (self.output)(&output);
                         input = None;
                     }
                     Output::Input => {
@@ -36,7 +32,6 @@ where
                     }
                     Output::Error(reason) => break Err(reason),
                     Output::Done => {
-                        (self.output)(&queue.left());
                         break Ok(());
                     }
                     Output::None => unreachable!(),
