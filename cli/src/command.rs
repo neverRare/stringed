@@ -1,4 +1,7 @@
-use std::{env, fs, io};
+use std::{
+    env, fs,
+    io::{stdin, stdout},
+};
 use stringed_core::Interpreter;
 
 const VERSION: &str = concat!(
@@ -117,19 +120,8 @@ impl Command {
                     Ok(content) => content,
                     Err(reason) => return Err(reason.to_string()),
                 };
-                let mut interpreter = Interpreter::new(
-                    || {
-                        let mut input = String::new();
-                        if let Err(reason) = io::stdin().read_line(&mut input) {
-                            panic!("Unable to read from input: {}", reason);
-                        }
-                        input.trim_end().to_string()
-                    },
-                    |string| {
-                        println!("{}", string);
-                    },
-                );
-                interpreter.run(&content)?;
+                let mut interpreter = Interpreter::new(stdin(), stdout());
+                interpreter.run(&content).map_err(|err| err.to_string())?;
             }
             Self::Help(command) => command.print_help(),
             Self::Version => println!("STRINGED {}", VERSION),
