@@ -1,5 +1,7 @@
 use std::{error, fmt::Display, num::ParseIntError, str::FromStr};
 
+use crate::parser::{self, Parser};
+
 #[derive(Debug)]
 pub enum OpCode {
     Output,
@@ -47,7 +49,12 @@ impl GenInterpreter {
             };
             match current {
                 OpCode::Output => return Ok(Some(Output::Output(val.pop().unwrap()))),
-                OpCode::Exec => todo!(),
+                OpCode::Exec => {
+                    let src = val.pop().unwrap();
+                    for op_code in Parser::exec(&src) {
+                        op.push(op_code?);
+                    }
+                }
                 OpCode::Concat => {
                     let second = val.pop().unwrap();
                     let first = val.pop().unwrap();
@@ -88,7 +95,12 @@ impl GenInterpreter {
                     let len = val.pop().unwrap().len();
                     val.push(format!("{}", len))
                 }
-                OpCode::Eval => todo!(),
+                OpCode::Eval => {
+                    let src = val.pop().unwrap();
+                    for op_code in Parser::eval(&src) {
+                        op.push(op_code?);
+                    }
+                }
                 OpCode::Value(value) => val.push(value),
             }
         }
@@ -102,6 +114,7 @@ pub enum Output {
 #[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     IntParseError(<usize as FromStr>::Err),
+    ParserError(parser::Error),
     InvalidIndex,
 }
 impl From<ParseIntError> for Error {
@@ -109,11 +122,17 @@ impl From<ParseIntError> for Error {
         Error::IntParseError(value)
     }
 }
+impl From<parser::Error> for Error {
+    fn from(value: parser::Error) -> Self {
+        Error::ParserError(value)
+    }
+}
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Error::IntParseError(err) => write!(f, "{}", err)?,
             Error::InvalidIndex => write!(f, "invalid index")?,
+            Error::ParserError(parser) => write!(f, "{}", parser)?,
         }
         Ok(())
     }
@@ -123,6 +142,7 @@ impl error::Error for Error {
         match self {
             Error::IntParseError(err) => Some(err),
             Error::InvalidIndex => None,
+            Error::ParserError(parser) => Some(parser),
         }
     }
 }
