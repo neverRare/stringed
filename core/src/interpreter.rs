@@ -4,7 +4,7 @@ use std::{
     io::{self, BufRead, Write},
 };
 
-use crate::gen_interpreter::{self, GenInterpreter, Output};
+use crate::state::{self, Output, State};
 
 pub struct Interpreter<I, O> {
     input: I,
@@ -21,7 +21,7 @@ where
     O: Write,
 {
     pub fn run(&mut self, src: String) -> Result<(), Error> {
-        let mut interpreter = GenInterpreter::start(src);
+        let mut interpreter = State::start(src);
         let mut result = interpreter.next(None);
         loop {
             let input;
@@ -49,7 +49,7 @@ where
 }
 #[derive(Debug)]
 pub enum Error {
-    Interpreter(gen_interpreter::Error),
+    Interpreter(state::Error),
     Io(io::Error),
 }
 impl From<io::Error> for Error {
@@ -57,8 +57,8 @@ impl From<io::Error> for Error {
         Error::Io(value)
     }
 }
-impl From<gen_interpreter::Error> for Error {
-    fn from(value: gen_interpreter::Error) -> Self {
+impl From<state::Error> for Error {
+    fn from(value: state::Error) -> Self {
         Error::Interpreter(value)
     }
 }

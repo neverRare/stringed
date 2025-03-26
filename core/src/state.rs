@@ -17,12 +17,12 @@ pub enum OpCode {
     Eval,
     Value(String),
 }
-pub struct GenInterpreter {
+pub struct State {
     var: Vec<String>,
     val: Vec<String>,
     op: Vec<OpCode>,
 }
-impl GenInterpreter {
+impl State {
     pub fn start(code: String) -> Self {
         Self {
             val: vec![code],

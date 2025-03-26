@@ -1,6 +1,6 @@
 use std::{error, fmt::Display};
 
-use crate::{gen_interpreter::OpCode, lexer::Lexer};
+use crate::{lexer::Lexer, state::OpCode};
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
