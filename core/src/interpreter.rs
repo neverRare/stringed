@@ -1,6 +1,6 @@
 use std::io::{self, BufRead, Write};
 
-use crate::gen_interpreter::{GenInterpreter, Output};
+use crate::gen_interpreter::{GenInterpreter, InterpreterError, Output};
 
 pub struct Interpreter<I, O> {
     input: I,
@@ -16,12 +16,12 @@ where
     I: BufRead,
     O: Write,
 {
-    pub fn run(&mut self, src: String) -> Result<(), io::Error> {
+    pub fn run(&mut self, src: String) -> Result<(), InterpreterOrIoError> {
         let mut interpreter = GenInterpreter::start(src);
         let mut result = interpreter.next(None);
         loop {
             let input;
-            if let Some(result) = result {
+            if let Some(result) = result? {
                 match result {
                     Output::Output(output) => {
                         write!(&mut self.output, "{}", output)?;
@@ -41,5 +41,20 @@ where
             }
             result = interpreter.next(input);
         }
+    }
+}
+#[derive(Debug)]
+pub enum InterpreterOrIoError {
+    Interpreter(InterpreterError),
+    Io(io::Error),
+}
+impl From<io::Error> for InterpreterOrIoError {
+    fn from(value: io::Error) -> Self {
+        InterpreterOrIoError::Io(value)
+    }
+}
+impl From<InterpreterError> for InterpreterOrIoError {
+    fn from(value: InterpreterError) -> Self {
+        InterpreterOrIoError::Interpreter(value)
     }
 }
