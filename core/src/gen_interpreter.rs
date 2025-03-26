@@ -1,4 +1,4 @@
-use std::{num::ParseIntError, str::FromStr};
+use std::{error, fmt::Display, num::ParseIntError, str::FromStr};
 
 #[derive(Debug)]
 enum OpCode {
@@ -28,7 +28,7 @@ impl GenInterpreter {
             op: vec![OpCode::PopVar, OpCode::Exec],
         }
     }
-    pub fn next(&mut self, mut input: Option<String>) -> Result<Option<Output>, InterpreterError> {
+    pub fn next(&mut self, mut input: Option<String>) -> Result<Option<Output>, Error> {
         let var = &mut self.var;
         let val = &mut self.val;
         let op = &mut self.op;
@@ -74,7 +74,7 @@ impl GenInterpreter {
                         str.len()
                     };
                     if str.len() < right || right < left {
-                        return Err(InterpreterError::InvalidIndex);
+                        return Err(Error::InvalidIndex);
                     }
                     val.push(str[left..right].to_string());
                 }
@@ -98,13 +98,30 @@ pub enum Output {
     Output(String),
     Input,
 }
-#[derive(Debug)]
-pub enum InterpreterError {
-    ToIntParseError(<usize as FromStr>::Err),
+#[derive(Debug, PartialEq, Eq)]
+pub enum Error {
+    IntParseError(<usize as FromStr>::Err),
     InvalidIndex,
 }
-impl From<ParseIntError> for InterpreterError {
+impl From<ParseIntError> for Error {
     fn from(value: <usize as FromStr>::Err) -> Self {
-        InterpreterError::ToIntParseError(value)
+        Error::IntParseError(value)
+    }
+}
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::IntParseError(err) => write!(f, "{}", err)?,
+            Error::InvalidIndex => write!(f, "invalid index")?,
+        }
+        Ok(())
+    }
+}
+impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            Error::IntParseError(err) => Some(err),
+            Error::InvalidIndex => None,
+        }
     }
 }

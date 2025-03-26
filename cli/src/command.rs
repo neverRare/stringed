@@ -1,6 +1,8 @@
 use std::{
-    env, fs,
-    io::{BufReader, stdin, stdout},
+    env,
+    fmt::Display,
+    fs,
+    io::{self, BufReader, stdin, stdout},
 };
 use stringed_core::Interpreter;
 
@@ -54,13 +56,13 @@ pub enum CommandName {
     Version,
 }
 impl CommandName {
-    fn new(name: &Option<&str>) -> Result<Self, String> {
+    fn new(name: Option<&str>) -> Result<Self, Error> {
         Ok(match name {
             None => Self::None,
             Some("run") => Self::Run,
             Some("help") => Self::Help,
             Some("version") => Self::Version,
-            Some(command) => return Err(format!("unknown command {}", command)),
+            Some(command) => return Err(Error::UnknownCommand(command.to_owned())),
         })
     }
     fn print_help(&self) {
@@ -82,11 +84,11 @@ pub enum Command {
     Version,
 }
 impl Command {
-    pub fn new(mut args: env::Args) -> Result<Self, String> {
+    pub fn new(mut args: env::Args) -> Result<Self, Error> {
         args.next();
         Ok(match args.next() {
             Some(command) => {
-                let name = CommandName::new(&Some(&command))?;
+                let name = CommandName::new(Some(&command))?;
                 let next = args.next();
                 if next == Some("--help".to_string()) {
                     Self::Help(name)
@@ -94,13 +96,12 @@ impl Command {
                     match &name {
                         CommandName::None => Self::None,
                         CommandName::Run => Self::Run(match next {
-                            None => return Err("expected file name, please specify it".to_string()),
+                            None => return Err(Error::NoFileName),
                             Some(path) => path,
                         }),
-                        CommandName::Help => Self::Help(CommandName::new(&match &next {
-                            Some(command) => Some(&command),
-                            None => None,
-                        })?),
+                        CommandName::Help => {
+                            Self::Help(CommandName::new(next.as_ref().map(|string| &string[..]))?)
+                        }
                         CommandName::Version => Self::Version,
                     }
                 }
@@ -108,7 +109,7 @@ impl Command {
             None => Self::None,
         })
     }
-    pub fn run(&self) -> Result<(), String> {
+    pub fn run(&self) -> Result<(), Error> {
         match self {
             Self::None => {
                 println!("STRINGED {}", VERSION);
@@ -116,16 +117,40 @@ impl Command {
                 println!("{}", HELP);
             }
             Self::Run(path) => {
-                let content = match fs::read_to_string(path) {
-                    Ok(content) => content,
-                    Err(reason) => return Err(reason.to_string()),
-                };
+                let content = fs::read_to_string(path)?;
                 let mut interpreter = Interpreter::new(BufReader::new(stdin()), stdout());
-                // TODO: handle error
-                interpreter.run(content).unwrap();
+                interpreter.run(content)?;
             }
             Self::Help(command) => command.print_help(),
             Self::Version => println!("STRINGED {}", VERSION),
+        }
+        Ok(())
+    }
+}
+#[derive(Debug)]
+pub enum Error {
+    Interpreter(stringed_core::Error),
+    Io(io::Error),
+    UnknownCommand(String),
+    NoFileName,
+}
+impl From<stringed_core::Error> for Error {
+    fn from(value: stringed_core::Error) -> Self {
+        Error::Interpreter(value)
+    }
+}
+impl From<io::Error> for Error {
+    fn from(value: io::Error) -> Self {
+        Error::Io(value)
+    }
+}
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Interpreter(error) => write!(f, "{}", error)?,
+            Error::Io(error) => write!(f, "{}", error)?,
+            Error::UnknownCommand(command) => write!(f, "unknown command: {}", command)?,
+            Error::NoFileName => write!(f, "no file name")?,
         }
         Ok(())
     }
