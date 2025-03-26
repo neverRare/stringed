@@ -24,7 +24,7 @@ impl GenInterpreter {
     pub fn start(code: String) -> Self {
         Self {
             val: vec![code],
-            var: vec!["".to_string()],
+            var: vec!["".to_owned()],
             op: vec![OpCode::PopVar, OpCode::Exec],
         }
     }
@@ -76,7 +76,7 @@ impl GenInterpreter {
                     if str.len() < right || right < left {
                         return Err(Error::InvalidIndex);
                     }
-                    val.push(str[left..right].to_string());
+                    val.push(str[left..right].to_owned());
                 }
                 OpCode::Equal => {
                     let first = val.pop().unwrap();

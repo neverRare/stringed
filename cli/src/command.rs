@@ -90,7 +90,7 @@ impl Command {
             Some(command) => {
                 let name = CommandName::new(Some(&command))?;
                 let next = args.next();
-                if next == Some("--help".to_string()) {
+                if next == Some("--help".to_owned()) {
                     Self::Help(name)
                 } else {
                     match &name {
