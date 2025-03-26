@@ -55,17 +55,19 @@ impl<'a> Token<'a> {
         None
     }
 }
-pub struct Lexer<'a>(&'a str);
+pub struct Lexer<'a> {
+    src: &'a str,
+}
 impl<'a> Lexer<'a> {
     pub fn new(src: &'a str) -> Self {
-        Lexer(src)
+        Lexer { src }
     }
 }
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let src = self.0.trim_start();
+        let src = self.src.trim_start();
         let ch = src.chars().next()?;
         match ch {
             '{' => {
@@ -73,7 +75,7 @@ impl<'a> Iterator for Lexer<'a> {
                     Some(result) => result,
                     None => return Some(Err(Error::UnclosedLiteral)),
                 };
-                self.0 = &src[len..];
+                self.src = &src[len..];
                 Some(Ok(token))
             }
             '"' => {
@@ -81,7 +83,7 @@ impl<'a> Iterator for Lexer<'a> {
                     Some(result) => result,
                     None => return Some(Err(Error::UnclosedLiteral)),
                 };
-                self.0 = &src[len..];
+                self.src = &src[len..];
                 Some(Ok(token))
             }
             item => match Token::get_symbol(item) {
