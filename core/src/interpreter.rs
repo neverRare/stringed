@@ -1,4 +1,4 @@
-use std::io::{self, Read, Write};
+use std::io::{self, BufRead, Read, Write};
 
 use crate::gen_interpreter::{GenInterpreter, Output};
 
@@ -13,7 +13,7 @@ impl<I, O> Interpreter<I, O> {
 }
 impl<I, O> Interpreter<I, O>
 where
-    I: Read,
+    I: BufRead,
     O: Write,
 {
     pub fn run(&mut self, src: String) -> Result<(), io::Error> {
@@ -31,7 +31,7 @@ where
                     Output::Input => {
                         self.output.flush()?;
                         let mut str = String::new();
-                        self.input.read_to_string(&mut str)?;
+                        self.input.read_line(&mut str)?;
                         input = Some(str);
                     }
                 }

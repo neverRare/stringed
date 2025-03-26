@@ -1,6 +1,6 @@
 use std::{
     env, fs,
-    io::{stdin, stdout},
+    io::{BufReader, stdin, stdout},
 };
 use stringed_core::Interpreter;
 
@@ -120,7 +120,7 @@ impl Command {
                     Ok(content) => content,
                     Err(reason) => return Err(reason.to_string()),
                 };
-                let mut interpreter = Interpreter::new(stdin(), stdout());
+                let mut interpreter = Interpreter::new(BufReader::new(stdin()), stdout());
                 interpreter.run(content).map_err(|err| err.to_string())?;
             }
             Self::Help(command) => command.print_help(),
