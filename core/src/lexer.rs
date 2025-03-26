@@ -30,60 +30,49 @@ impl<'a> Token<'a> {
             Token::Dollar => "$",
         }
     }
-}
-fn get_symbol(src: &str) -> Option<Token> {
-    debug_assert_eq!(src.len(), 1);
-    Some(match src {
-        "(" => Token::OpenParen,
-        ")" => Token::CloseParen,
-        "?" => Token::QuestionMark,
-        "_" => Token::Underscore,
-        ":" => Token::Colon,
-        "+" => Token::Plus,
-        "[" => Token::OpenBracket,
-        "]" => Token::CloseBracket,
-        "=" => Token::Equal,
-        "#" => Token::Hash,
-        "$" => Token::Dollar,
-        _ => return None,
-    })
-}
-#[derive(Eq, PartialEq, Debug)]
-struct SizedToken<'a> {
-    token: Token<'a>,
-    len: usize,
-}
-fn get_quote_str(src: &str) -> Result<SizedToken, &str> {
-    debug_assert_eq!(src.get(0..1), Some("\""));
-    for i in 1..src.len() {
-        if let Some("\"") = src.get(i..i + 1) {
-            return Ok(SizedToken {
-                token: Token::Literal(&src[1..i]),
-                len: i + 1,
-            });
-        }
+    fn get_symbol(src: &str) -> Option<Self> {
+        debug_assert_eq!(src.len(), 1);
+        Some(match src {
+            "(" => Token::OpenParen,
+            ")" => Token::CloseParen,
+            "?" => Token::QuestionMark,
+            "_" => Token::Underscore,
+            ":" => Token::Colon,
+            "+" => Token::Plus,
+            "[" => Token::OpenBracket,
+            "]" => Token::CloseBracket,
+            "=" => Token::Equal,
+            "#" => Token::Hash,
+            "$" => Token::Dollar,
+            _ => return None,
+        })
     }
-    Err("invalid literal")
-}
-fn get_brace_str(src: &str) -> Result<SizedToken, &str> {
-    assert_eq!(src.get(0..1), Some("{"));
-    let mut count: usize = 1;
-    for i in 1..src.len() {
-        match src.get(i..i + 1) {
-            Some("{") => count += 1,
-            Some("}") => {
-                count -= 1;
-                if count == 0 {
-                    return Ok(SizedToken {
-                        token: Token::Literal(&src[1..i]),
-                        len: i + 1,
-                    });
-                }
+    fn get_quote_str(src: &str) -> Result<(Token, usize), &str> {
+        debug_assert_eq!(src.get(0..1), Some("\""));
+        for i in 1..src.len() {
+            if let Some("\"") = src.get(i..i + 1) {
+                return Ok((Token::Literal(&src[1..i]), i + 1));
             }
-            _ => (),
         }
+        Err("invalid literal")
     }
-    Err("invalid literal")
+    fn get_brace_str(src: &str) -> Result<(Token, usize), &str> {
+        assert_eq!(src.get(0..1), Some("{"));
+        let mut count: usize = 1;
+        for i in 1..src.len() {
+            match src.get(i..i + 1) {
+                Some("{") => count += 1,
+                Some("}") => {
+                    count -= 1;
+                    if count == 0 {
+                        return Ok((Token::Literal(&src[1..i]), i + 1));
+                    }
+                }
+                _ => (),
+            }
+        }
+        Err("invalid literal")
+    }
 }
 pub fn lex(src: &str) -> Result<Vec<Token>, &str> {
     if src.is_empty() {
@@ -94,21 +83,21 @@ pub fn lex(src: &str) -> Result<Vec<Token>, &str> {
         while i < src.len() {
             match src.get(i..i + 1) {
                 Some("{") => {
-                    let token = get_brace_str(&src[i..])?;
-                    tokens.push(token.token);
-                    i += token.len;
+                    let (token, len) = Token::get_brace_str(&src[i..])?;
+                    tokens.push(token);
+                    i += len;
                 }
                 Some("\"") => {
-                    let token = get_quote_str(&src[i..])?;
-                    tokens.push(token.token);
-                    i += token.len;
+                    let (token, len) = Token::get_quote_str(&src[i..])?;
+                    tokens.push(token);
+                    i += len;
                 }
                 Some(item) => {
                     i += 1;
                     if item == " " || item == "\t" || item == "\n" || item == "\r" {
                         continue;
                     }
-                    match get_symbol(item) {
+                    match Token::get_symbol(item) {
                         Some(token) => tokens.push(token),
                         None => return Err("unidentified char"),
                     }
@@ -127,22 +116,16 @@ mod lexer_test {
     fn get_quote_str() {
         use super::*;
         assert_eq!(
-            get_quote_str("\"in\"out"),
-            Ok(SizedToken {
-                token: Token::Literal("in"),
-                len: 4,
-            }),
+            Token::get_quote_str("\"in\"out"),
+            Ok((Token::Literal("in"), 4)),
         );
     }
     #[test]
     fn get_brace_str() {
         use super::*;
         assert_eq!(
-            get_brace_str("{{}{{}}}out"),
-            Ok(SizedToken {
-                token: Token::Literal("{}{{}}"),
-                len: 8,
-            }),
+            Token::get_brace_str("{{}{{}}}out"),
+            Ok((Token::Literal("{}{{}}"), 8)),
         );
     }
 }
