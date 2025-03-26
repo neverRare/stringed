@@ -6,6 +6,7 @@ use std::{
 
 use crate::state::{self, Output, State};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Interpreter<I, O> {
     input: I,
     output: O,

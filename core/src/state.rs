@@ -2,7 +2,7 @@ use std::{error, fmt::Display, num::ParseIntError, str::FromStr};
 
 use crate::parser::{self, Parser};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum OpCode {
     Output,
     Exec,
@@ -106,12 +106,12 @@ impl State {
         }
     }
 }
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Output {
     Output(String),
     Input,
 }
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Error {
     IntParseError(<usize as FromStr>::Err),
     ParserError(parser::Error),

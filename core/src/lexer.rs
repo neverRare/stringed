@@ -1,6 +1,6 @@
 use std::{error, fmt::Display};
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub enum Token<'a> {
     Literal(&'a str),
     OpenParen,
@@ -55,6 +55,7 @@ impl<'a> Token<'a> {
         None
     }
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Lexer<'a> {
     src: &'a str,
 }
@@ -93,7 +94,7 @@ impl<'a> Iterator for Lexer<'a> {
         }
     }
 }
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Error {
     UnclosedLiteral,
     UnknownSymbol(char),

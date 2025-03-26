@@ -5,6 +5,7 @@ use crate::{
     state::OpCode,
 };
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
 }
@@ -44,7 +45,7 @@ impl<'a> Iterator for Parser<'a> {
         }
     }
 }
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Error {
     LexerError(lexer::Error),
 }
