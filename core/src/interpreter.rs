@@ -18,7 +18,7 @@ where
 {
     pub fn run(&mut self, src: &str) -> Result<(), io::Error> {
         let mut interpreter = GenInterpreter::start(src);
-        let mut result = None;
+        let mut result = interpreter.next(None);
         loop {
             let input;
             if let Some(result) = result {
@@ -33,18 +33,15 @@ where
                         self.input.read_to_string(&mut str)?;
                         input = Some(str);
                     }
-                    Output::Done => {
-                        self.output.flush()?;
-                        break Ok(());
-                    }
                 }
             } else {
-                input = None;
+                self.output.flush()?;
+                break Ok(());
             }
-            result = Some(interpreter.next(match &input {
+            result = interpreter.next(match &input {
                 Some(x) => Some(&x),
                 None => None,
-            }));
+            });
         }
     }
 }
