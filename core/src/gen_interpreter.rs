@@ -1,7 +1,7 @@
 use std::{error, fmt::Display, num::ParseIntError, str::FromStr};
 
 #[derive(Debug)]
-enum OpCode {
+pub enum OpCode {
     Output,
     Exec,
     Concat,
