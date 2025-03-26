@@ -53,41 +53,43 @@ impl<'a> Token<'a> {
         None
     }
 }
-pub fn lex(src: &str) -> Result<Vec<Token>, &str> {
-    if src.is_empty() {
-        Err("code can't be empty")
-    } else {
-        let mut i = 0;
-        let mut tokens = Vec::new();
-        while i < src.len() {
-            match src.chars().next() {
-                Some('{') => {
-                    let (token, len) = Token::get_brace_str(&src[i..]).ok_or("invalid token")?;
-                    tokens.push(token);
-                    i += len;
+pub fn lex(src: &str) -> Result<Vec<Token>, LexerError> {
+    let mut i = 0;
+    let mut tokens = Vec::new();
+    while i < src.len() {
+        match src.chars().next() {
+            Some('{') => {
+                let (token, len) = Token::get_brace_str(&src[i..])
+                    .ok_or(LexerError::UnclosedLiteral(&src[i..]))?;
+                tokens.push(token);
+                i += len;
+            }
+            Some('"') => {
+                let (token, len) = Token::get_quote_str(&src[i..])
+                    .ok_or(LexerError::UnclosedLiteral(&src[i..]))?;
+                tokens.push(token);
+                i += len;
+            }
+            Some(item) => {
+                i += 1;
+                if item.is_whitespace() {
+                    continue;
                 }
-                Some('"') => {
-                    let (token, len) = Token::get_quote_str(&src[i..]).ok_or("invalid token")?;
-                    tokens.push(token);
-                    i += len;
-                }
-                Some(item) => {
-                    i += 1;
-                    if item.is_whitespace() {
-                        continue;
-                    }
-                    match Token::get_symbol(item) {
-                        Some(token) => tokens.push(token),
-                        None => return Err("unidentified char"),
-                    }
-                }
-                None => {
-                    i += 1;
+                match Token::get_symbol(item) {
+                    Some(token) => tokens.push(token),
+                    None => return Err(LexerError::UnknownSymbol(item)),
                 }
             }
+            None => {
+                i += 1;
+            }
         }
-        Ok(tokens)
     }
+    Ok(tokens)
+}
+pub enum LexerError<'a> {
+    UnclosedLiteral(&'a str),
+    UnknownSymbol(char),
 }
 #[cfg(test)]
 mod lexer_test {
