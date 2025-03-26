@@ -16,7 +16,7 @@ where
     I: Read,
     O: Write,
 {
-    pub fn run(&mut self, src: &str) -> Result<(), io::Error> {
+    pub fn run(&mut self, src: String) -> Result<(), io::Error> {
         let mut interpreter = GenInterpreter::start(src);
         let mut result = interpreter.next(None);
         loop {
@@ -38,10 +38,7 @@ where
                 self.output.flush()?;
                 break Ok(());
             }
-            result = interpreter.next(match &input {
-                Some(x) => Some(&x),
-                None => None,
-            });
+            result = interpreter.next(input);
         }
     }
 }

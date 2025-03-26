@@ -121,7 +121,7 @@ impl Command {
                     Err(reason) => return Err(reason.to_string()),
                 };
                 let mut interpreter = Interpreter::new(stdin(), stdout());
-                interpreter.run(&content).map_err(|err| err.to_string())?;
+                interpreter.run(content).map_err(|err| err.to_string())?;
             }
             Self::Help(command) => command.print_help(),
             Self::Version => println!("STRINGED {}", VERSION),
