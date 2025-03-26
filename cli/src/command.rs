@@ -1,5 +1,5 @@
 use std::{
-    env,
+    env, error,
     fmt::Display,
     fs,
     io::{self, BufReader, stdin, stdout},
@@ -153,5 +153,15 @@ impl Display for Error {
             Error::NoFileName => write!(f, "no file name")?,
         }
         Ok(())
+    }
+}
+impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            Error::Interpreter(error) => Some(error),
+            Error::Io(error) => Some(error),
+            Error::UnknownCommand(_) => None,
+            Error::NoFileName => None,
+        }
     }
 }
